@@ -1,0 +1,11 @@
+GTNH Live Base — independent static viewer, original implementation.
+Minecraft / GregTech: New Horizons trademarks belong to their respective owners.
+No Minecraft or GregTech textures are distributed. Blocks use original color materials.
+Three.js 0.180.0 — MIT license, Copyright 2010-2025 Three.js Authors.
+See THREE-LICENSE.txt for the complete license.
+Machine registry names and numerical identifiers were obtained from GT5-Unofficial 5.09.54.205:
+https://github.com/GTNewHorizons/GT5-Unofficial/tree/5.09.54.205
+The data collector reads the local output of GTNH Speedrun Audit 0.9.0:
+https://github.com/OrderedSet86/gtnh-speedrun-audit/tree/v0.9.0
+Behavioral reference, without copying its source or assets:
+https://orderedset86.github.io/gtnh-runs/runs/20261022_nekonou_moon/

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Интерактивная 3D-история машин и труб базы GregTech: New Horizons.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>GTNH · Живая база</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script type="module" src="assets/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="GTNH — Живая база"><img src="assets/mark.svg" alt="" width="34" height="34"><span><b>GTNH<span class="brand-dot"> / </span>ЖИВАЯ БАЗА</b><small>GREGTECH: NEW HORIZONS · 3D ATLAS</small></span></a>
+    <div class="sync"><span class="status-led" id="status-led"></span><span id="update">Загрузка данных…</span></div>
+    <button id="panel-toggle" class="mobile-only icon-button" aria-controls="sidebar" aria-expanded="false" title="Фильтры">☷</button>
+  </header>
+  <main>
+    <aside id="sidebar">
+      <div class="section-heading"><span class="eyebrow">ОБЗОР МИРА</span><span class="tag">RC2</span></div>
+      <h1>От камня<br>к звёздам<span class="accent">.</span></h1>
+      <p class="intro">Каждая машина — шаг вперёд.<br>Исследуйте, как растёт ваша база.</p>
+      <div class="totals"><div><strong id="machine-count">0</strong><span>машин</span></div><div><strong id="pipe-count">0</strong><span>кабелей и труб</span></div></div>
+      <label class="field-label" for="dimension">ИЗМЕРЕНИЕ</label>
+      <select id="dimension" aria-label="Измерение"><option value="0">Верхний мир</option></select>
+      <div class="filter-title"><h2>Ступени развития</h2><button id="tiers-all" class="text-button">Все</button></div>
+      <div id="tiers" class="filter-list"></div>
+      <div class="filter-title"><h2>Инфраструктура</h2><button id="kinds-all" class="text-button">Все</button></div>
+      <div id="kinds" class="filter-list"></div>
+      <details class="accuracy"><summary>О данных и точности <span>↗</span></summary><ul id="limits"></ul><p>Независимый проект. Three.js — MIT. <a href="credits.txt">Атрибуция</a></p></details>
+      <div class="sidebar-foot"><span class="tiny-square"></span> СХЕМА МАШИН И ТРУБ</div>
+    </aside>
+    <section class="viewport" aria-label="Интерактивная трёхмерная модель базы">
+      <div id="scene"></div>
+      <div class="viewport-heading"><span class="eyebrow">BASE EXPLORER</span><div><span class="tag subtle" id="visible-count">0 элементов</span><span class="tag subtle">ОТНОСИТЕЛЬНЫЕ XYZ</span></div></div>
+      <div class="view-actions"><button id="fit" class="icon-button" title="Центрировать базу" aria-label="Центрировать базу">⌖</button><button id="top-view" class="icon-button" title="Вид сверху" aria-label="Вид сверху">⊞</button><button id="grid-toggle" class="icon-button active" title="Показать сетку" aria-label="Показать сетку" aria-pressed="true">▦</button></div>
+      <div class="compass" aria-label="Оси координат"><span class="axis-y">Y</span><span class="axis-x">X</span><span class="axis-z">Z</span><span class="compass-center">＋</span></div>
+      <div id="empty" class="empty" hidden><span>◇</span><h2>Здесь начинается история</h2><p>Машин пока нет или они скрыты фильтрами.</p></div>
+      <div id="error" class="error" role="alert" hidden></div>
+      <div id="notice" class="notice" hidden></div>
+      <div id="tooltip" class="tooltip" role="status" hidden></div>
+      <div class="gesture-hint"><span>↶ Вращение</span><span>⇧ Панорама</span><span>⊕ Масштаб</span></div>
+      <div class="timeline">
+        <div class="timeline-head"><span class="eyebrow">ИСТОРИЯ БАЗЫ <span class="igt-badge">IGT</span></span><span id="timeline-state">Начальный снимок</span></div>
+        <div class="timeline-controls"><button id="play" class="play" aria-label="Запустить историю" title="Запустить / приостановить">▶</button><div class="time-current"><strong id="current-time">00:00:00</strong><span>ИГРОВОЕ ВРЕМЯ</span></div><div class="scrubber"><input type="range" id="time" min="0" max="1" value="1" step="1" aria-label="Время истории"><div class="range-labels"><span>НАЧАЛО</span><span id="duration">00:00:00</span></div></div><select id="speed" aria-label="Скорость анимации"><option value="1">1×</option><option value="4">4×</option><option value="12">12×</option></select><button id="latest" class="latest">К настоящему <span>→</span></button></div>
+        <form id="jump-form"><label for="jump-time">Перейти к IGT</label><input id="jump-time" aria-label="Момент IGT в формате часы:минуты:секунды" placeholder="чч:мм:сс" pattern="[0-9]+:[0-5][0-9]:[0-5][0-9]"><button class="text-button" type="submit">Перейти →</button></form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
