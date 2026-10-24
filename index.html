@@ -9,6 +9,7 @@
   <title>GTNH · Живая база</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/activity.css">
   <script type="module" src="assets/app.js"></script>
 </head>
 <body>
@@ -29,7 +30,8 @@
       <div id="tiers" class="filter-list"></div>
       <div class="filter-title"><h2>Инфраструктура</h2><button id="kinds-all" class="text-button">Все</button></div>
       <div id="kinds" class="filter-list"></div>
-      <details class="accuracy"><summary>О данных и точности <span>↗</span></summary><ul id="limits"></ul><p>Независимый проект. Three.js — MIT. <a href="credits.txt">Атрибуция</a></p></details>
+      <label class="visual-option"><input id="textures-toggle" type="checkbox" checked> Текстуры GregTech</label>
+      <details class="accuracy"><summary>О данных и точности <span>↗</span></summary><ul id="limits"></ul><p>Текстуры GT — LGPL-3.0-or-later. Three.js — MIT. <a href="credits.txt">Авторы и лицензии</a></p></details>
       <div class="sidebar-foot"><span class="tiny-square"></span> МАШИНЫ И ТРУБЫ · ЦИКЛ 60 МИН</div>
     </aside>
     <section class="viewport" aria-label="Интерактивная трёхмерная модель базы">
@@ -42,10 +44,13 @@
       <div id="notice" class="notice" hidden></div>
       <div id="tooltip" class="tooltip" role="status" hidden></div>
       <div class="gesture-hint"><span>↶ Вращение</span><span>⇧ Панорама</span><span>⊕ Масштаб</span></div>
+      <section id="activity-detail" class="activity-detail" aria-label="Изменения в выбранный момент" hidden><div class="activity-detail-heading"><strong id="activity-detail-title"></strong><button id="activity-close" class="text-button" aria-label="Закрыть список изменений">✕</button></div><p id="activity-detail-summary"></p><ul id="activity-detail-list"></ul><small id="activity-detail-note"></small></section>
       <div class="timeline">
         <div class="timeline-head"><span class="eyebrow">ИСТОРИЯ БАЗЫ <span class="igt-badge">IGT</span></span><span id="timeline-state">Начальный снимок</span></div>
-        <div class="timeline-controls"><button id="play" class="play" aria-label="Запустить историю" title="Запустить / приостановить">▶</button><div class="time-current"><strong id="current-time">00:00:00</strong><span>ИГРОВОЕ ВРЕМЯ</span></div><div class="scrubber"><input type="range" id="time" min="0" max="1" value="1" step="1" aria-label="Время истории"><div class="range-labels"><span>НАЧАЛО</span><span id="duration">00:00:00</span></div></div><select id="speed" aria-label="Скорость анимации"><option value="1">1×</option><option value="4">4×</option><option value="12">12×</option></select><button id="latest" class="latest">К настоящему <span>→</span></button></div>
-        <form id="jump-form"><label for="jump-time">Перейти к IGT</label><input id="jump-time" aria-label="Момент IGT в формате часы:минуты:секунды" placeholder="чч:мм:сс" pattern="[0-9]+:[0-5][0-9]:[0-5][0-9]"><button class="text-button" type="submit">Перейти →</button></form>
+        <div class="activity-legend"><span class="added">● Добавлено <b id="activity-added-count">0</b></span><span class="changed">● Изменено <b id="activity-changed-count">0</b></span><span class="removed">● Удалено <b id="activity-removed-count">0</b></span><span class="baseline">● Снимок</span></div>
+        <div class="timeline-controls"><button id="play" class="play" aria-label="Запустить историю" title="Запустить / приостановить">▶</button><div class="time-current"><strong id="current-time">00:00:00</strong><span>ИГРОВОЕ ВРЕМЯ</span></div><div class="scrubber"><div id="activity-strip" class="activity-strip" role="group" aria-label="Цветные отметки активности"><div id="activity-bars"></div><div id="activity-cursor"></div></div><input type="range" id="time" min="0" max="1" value="1" step="1" aria-label="Время истории"><div class="range-labels"><span>НАЧАЛО</span><span id="duration">00:00:00</span></div></div><select id="speed" aria-label="Скорость анимации"><option value="1">1×</option><option value="4">4×</option><option value="12">12×</option></select><button id="latest" class="latest">К настоящему <span>→</span></button></div>
+        <div class="activity-footer"><div class="event-navigation"><button id="previous-event" class="text-button" title="Предыдущее изменение">← Событие</button><button id="next-event" class="text-button" title="Следующее изменение">Событие →</button></div><label class="highlight-option"><input id="highlight-toggle" type="checkbox" checked> Подсветить</label><form id="jump-form"><label for="jump-time">К IGT</label><input id="jump-time" aria-label="Момент IGT в формате часы:минуты:секунды" placeholder="чч:мм:сс" pattern="[0-9]+:[0-5][0-9]:[0-5][0-9]"><button class="text-button" type="submit">Перейти →</button></form></div>
+        <p id="activity-help" class="activity-help">Нажмите цветную отметку, чтобы увидеть изменения.</p>
       </div>
     </section>
   </main>

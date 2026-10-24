@@ -1,6 +1,13 @@
 GTNH Live Base — independent static viewer, original implementation.
 Minecraft / GregTech: New Horizons trademarks belong to their respective owners.
-No Minecraft or GregTech textures are distributed. Blocks use original color materials.
+GregTech textures are redistributed as separate, unmodified PNG source assets under LGPL-3.0-or-later.
+Copyright GregoriusT, GregTech and GTNewHorizons contributors; see the upstream source for individual history.
+Upstream attribution also credits Jimbno and UU-Tex: https://github.com/Jimbno/UU-Tex
+Copies of the LGPL and incorporated GPL terms: licenses/GT-LGPL-3.0.txt and licenses/GPL-3.0.txt
+Every distributed texture, its original source path and SHA-256 are listed in assets/textures/manifest.json.
+Original PNG assets are provided directly in assets/textures/gt/ and can be replaced independently of the viewer.
+No Minecraft vanilla textures, inventories, custom player text or world NBT are included.
+Texture profiles represent machine types; exact paint, covers, addons and running state are not recorded.
 Three.js 0.180.0 — MIT license, Copyright 2010-2025 Three.js Authors.
 See THREE-LICENSE.txt for the complete license.
 Machine registry names and numerical identifiers were obtained from GT5-Unofficial 5.09.54.205:
