@@ -12,6 +12,8 @@ Three.js 0.180.0 — MIT license, Copyright 2010-2025 Three.js Authors.
 See THREE-LICENSE.txt for the complete license.
 Machine registry names and numerical identifiers were obtained from GT5-Unofficial 5.09.54.205:
 https://github.com/GTNewHorizons/GT5-Unofficial/tree/5.09.54.205
+Russian machine/material names were selected from the same release's ru_RU.lang resources (LGPL-3.0-or-later).
+The selected strings and concise original label overrides are provided in assets/ru-names.json.
 The data collector reads the local output of GTNH Speedrun Audit 0.9.0:
 https://github.com/OrderedSet86/gtnh-speedrun-audit/tree/v0.9.0
 Behavioral reference, without copying its source or assets:

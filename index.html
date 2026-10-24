@@ -3,54 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Интерактивная 3D-история машин и труб базы GregTech: New Horizons.">
+  <meta name="description" content="База GregTech: New Horizons в 3D и история её изменений.">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>GTNH · Живая база</title>
+  <title>GTNH · База</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css">
-  <link rel="stylesheet" href="assets/activity.css?v=2">
-  <script type="module" src="assets/app.js?v=2"></script>
+  <link rel="stylesheet" href="assets/style.css?v=3">
+  <script type="module" src="assets/app.js?v=3"></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="./" aria-label="GTNH — Живая база"><img src="assets/mark.svg" alt="" width="34" height="34"><span><b>GTNH<span class="brand-dot"> / </span>ЖИВАЯ БАЗА</b><small>GREGTECH: NEW HORIZONS · 3D ATLAS</small></span></a>
-    <div class="sync"><span class="status-led" id="status-led"></span><span id="update">Загрузка данных…</span></div>
-    <button id="panel-toggle" class="mobile-only icon-button" aria-controls="sidebar" aria-expanded="false" title="Фильтры">☷</button>
+    <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
+    <div class="header-actions"><div class="sync"><span id="status-led" class="status-led"></span><span id="update">Загрузка…</span></div><button id="panel-toggle" class="filter-toggle" aria-label="Фильтры" aria-controls="sidebar" aria-expanded="false">☷ <span>Фильтры</span></button></div>
   </header>
   <main>
-    <aside id="sidebar">
-      <div class="section-heading"><span class="eyebrow">ОБЗОР МИРА</span><span class="tag">RC2</span></div>
-      <h1>От камня<br>к звёздам<span class="accent">.</span></h1>
-      <p class="intro">Каждая машина — шаг вперёд.<br>Исследуйте, как растёт ваша база.</p>
-      <div class="totals"><div><strong id="machine-count">0</strong><span>машин</span></div><div><strong id="pipe-count">0</strong><span>кабелей и труб</span></div></div>
-      <label class="field-label" for="dimension">ИЗМЕРЕНИЕ</label>
-      <select id="dimension" aria-label="Измерение"><option value="0">Верхний мир</option></select>
-      <div class="filter-title"><h2>Ступени развития</h2><button id="tiers-all" class="text-button">Все</button></div>
-      <div id="tiers" class="filter-list"></div>
-      <div class="filter-title"><h2>Инфраструктура</h2><button id="kinds-all" class="text-button">Все</button></div>
-      <div id="kinds" class="filter-list"></div>
-      <label class="visual-option"><input id="textures-toggle" type="checkbox" checked> Текстуры GregTech</label>
-      <details class="accuracy"><summary>О данных и точности <span>↗</span></summary><ul id="limits"></ul><p>Текстуры GT — LGPL-3.0-or-later. Three.js — MIT. <a href="credits.txt">Авторы и лицензии</a></p></details>
-      <div class="sidebar-foot"><span class="tiny-square"></span> МАШИНЫ И ТРУБЫ · ЦИКЛ 60 МИН</div>
+    <aside id="sidebar" inert aria-label="Фильтры">
+      <div class="drawer-heading"><h1>Фильтры</h1><button id="panel-close" class="icon-button" aria-label="Закрыть фильтры">×</button></div>
+      <div id="dimension-field"><label class="field-label" for="dimension">Измерение</label><select id="dimension"><option value="0">Верхний мир</option></select></div>
+      <div class="filter-title"><h2>Уровень</h2><button id="tiers-all" class="text-button">Все</button></div><div id="tiers" class="filter-list"></div>
+      <div class="filter-title"><h2>Объекты</h2><button id="kinds-all" class="text-button">Все</button></div><div id="kinds" class="filter-list"></div>
+      <label class="visual-option"><input id="textures-toggle" type="checkbox" checked> Текстуры</label>
+      <details class="accuracy"><summary>О данных</summary><ul id="limits"></ul><a href="credits.txt">Авторы и лицензии</a></details>
     </aside>
-    <section class="viewport" aria-label="Интерактивная трёхмерная модель базы">
+    <section class="viewport" aria-label="База в 3D">
       <div id="scene"></div>
-      <div class="viewport-heading"><span class="eyebrow">BASE EXPLORER</span><div><span class="tag subtle" id="visible-count">0 элементов</span><span class="tag subtle">ОТНОСИТЕЛЬНЫЕ XYZ</span></div></div>
-      <div class="view-actions"><button id="fit" class="icon-button" title="Центрировать базу" aria-label="Центрировать базу">⌖</button><button id="top-view" class="icon-button" title="Вид сверху" aria-label="Вид сверху">⊞</button><button id="grid-toggle" class="icon-button active" title="Показать сетку" aria-label="Показать сетку" aria-pressed="true">▦</button></div>
-      <div class="compass" aria-label="Оси координат"><span class="axis-y">Y</span><span class="axis-x">X</span><span class="axis-z">Z</span><span class="compass-center">＋</span></div>
-      <div id="empty" class="empty" hidden><span>◇</span><h2>Здесь начинается история</h2><p>Машин пока нет или они скрыты фильтрами.</p></div>
-      <div id="error" class="error" role="alert" hidden></div>
-      <div id="notice" class="notice" hidden></div>
-      <div id="tooltip" class="tooltip" role="status" hidden></div>
-      <div class="gesture-hint"><span>↶ Вращение</span><span>⇧ Панорама</span><span>⊕ Масштаб</span></div>
-      <section id="activity-detail" class="activity-detail" aria-label="Изменения в выбранный момент" hidden><div class="activity-detail-heading"><strong id="activity-detail-title"></strong><button id="activity-close" class="text-button" aria-label="Закрыть список изменений">✕</button></div><p id="activity-detail-summary"></p><ul id="activity-detail-list"></ul><small id="activity-detail-note"></small></section>
-      <div class="timeline">
-        <div class="timeline-head"><span class="eyebrow">ИСТОРИЯ БАЗЫ <span class="igt-badge">IGT</span></span><span id="timeline-state">Начальный снимок</span></div>
-        <div class="activity-legend"><span class="added">● Добавлено <b id="activity-added-count">0</b></span><span class="changed">● Изменено <b id="activity-changed-count">0</b></span><span class="removed">● Удалено <b id="activity-removed-count">0</b></span><span class="baseline">● Снимок</span></div>
-        <div class="timeline-controls"><button id="play" class="play" aria-label="Запустить историю" title="Запустить / приостановить">▶</button><div class="time-current"><strong id="current-time">00:00:00</strong><span>ИГРОВОЕ ВРЕМЯ</span></div><div class="scrubber"><div id="activity-strip" class="activity-strip" role="group" aria-label="Цветные отметки активности"><div id="activity-bars"></div><div id="activity-cursor"></div></div><input type="range" id="time" min="0" max="1" value="1" step="1" aria-label="Время истории"><div class="range-labels"><span>НАЧАЛО</span><span id="duration">00:00:00</span></div></div><select id="speed" aria-label="Скорость анимации"><option value="1">1×</option><option value="4">4×</option><option value="12">12×</option></select><button id="latest" class="latest">К настоящему <span>→</span></button></div>
-        <div class="activity-footer"><div class="event-navigation"><button id="previous-event" class="text-button" title="Предыдущее изменение">← Событие</button><button id="next-event" class="text-button" title="Следующее изменение">Событие →</button></div><label class="highlight-option"><input id="highlight-toggle" type="checkbox" checked> Подсветить</label><form id="jump-form"><label for="jump-time">К IGT</label><input id="jump-time" aria-label="Момент IGT в формате часы:минуты:секунды" placeholder="чч:мм:сс" pattern="[0-9]+:[0-5][0-9]:[0-5][0-9]"><button class="text-button" type="submit">Перейти →</button></form></div>
-        <p id="activity-help" class="activity-help">Нажмите цветную отметку, чтобы увидеть изменения.</p>
+      <div class="base-counts"><span><b id="machine-count">0</b> машин</span><span class="separator">·</span><span><b id="pipe-count">0</b> труб и кабелей</span></div><span id="visible-count" class="sr-only"></span>
+      <div class="view-actions"><button id="fit" class="icon-button" title="Вся база" aria-label="Вся база">⌖</button><button id="top-view" class="icon-button" title="Вид сверху" aria-label="Вид сверху">⊞</button><button id="grid-toggle" class="icon-button" title="Сетка" aria-label="Сетка" aria-pressed="false">▦</button></div>
+      <div id="empty" class="empty" hidden><h2>Нет объектов</h2><p>Проверьте фильтры.</p></div>
+      <div id="error" class="error" role="alert" hidden></div><div id="notice" class="notice" hidden></div><div id="tooltip" class="tooltip" role="status" hidden></div>
+      <section id="object-detail" class="object-detail" aria-label="Выбранный объект" hidden><div class="card-heading"><strong id="object-name"></strong><button id="object-close" class="text-button" aria-label="Закрыть объект">×</button></div><p id="object-purpose"></p><p id="object-meta" class="muted"></p><details id="object-more"><summary>Подробнее</summary><dl id="object-facts"></dl></details></section>
+      <section id="activity-detail" class="activity-detail" aria-label="Изменения" hidden><div class="card-heading"><strong id="activity-detail-title"></strong><button id="activity-close" class="text-button" aria-label="Закрыть изменения">×</button></div><p id="activity-detail-summary"></p><ul id="activity-detail-list"></ul><small id="activity-detail-note"></small></section>
+      <div class="timeline" aria-label="История базы">
+        <span id="timeline-state" class="sr-only"></span>
+        <div class="timeline-controls"><div class="playback"><button id="previous-event" class="step-button" title="Предыдущее событие" aria-label="Предыдущее событие">‹</button><button id="play" class="play" aria-label="Запустить историю">▶</button><button id="next-event" class="step-button" title="Следующее событие" aria-label="Следующее событие">›</button></div><div class="time-current"><strong id="current-time" title="Игровое время">00:00:00</strong></div><div class="scrubber"><div id="activity-strip" class="activity-strip" role="group" aria-label="Изменения на шкале времени"><div id="activity-bars"></div><div id="activity-cursor"></div></div><input type="range" id="time" min="0" max="1" value="1" step="1" aria-label="Игровое время"><div class="range-labels"><span>0:00</span><span id="duration">00:00:00</span></div></div><select id="speed" aria-label="Скорость"><option value="1">1×</option><option value="4">4×</option><option value="12">12×</option></select><button id="latest" class="step-button" title="Последние данные" aria-label="Последние данные">↦</button></div>
+        <div class="timeline-bottom"><div class="activity-legend"><span class="added">● Добавлено <b id="activity-added-count">0</b></span><span class="changed">● Изменено <b id="activity-changed-count">0</b></span><span class="removed">● Удалено <b id="activity-removed-count">0</b></span></div><details id="timeline-more" class="timeline-more"><summary aria-label="Настройки истории" title="Настройки истории">⋯</summary><div class="timeline-extra"><label class="visual-option"><input id="highlight-toggle" type="checkbox" checked> Подсветка изменений</label><form id="jump-form"><label for="jump-time">Перейти к времени</label><div><input id="jump-time" aria-label="Часы, минуты, секунды" placeholder="чч:мм:сс" pattern="[0-9]+:[0-5][0-9]:[0-5][0-9]"><button class="text-button" type="submit">→</button></div></form></div></details></div>
+        <p id="activity-help" class="sr-only"></p>
       </div>
     </section>
   </main>
