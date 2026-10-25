@@ -5,6 +5,7 @@ const number = new Intl.NumberFormat('ru-RU');
 const formNames = { ingot: 'Слитки', plate: 'Пластины', gem: 'Алмазы', dust: 'Редстоун' };
 const names = new Intl.Collator('ru', { sensitivity: 'base', numeric: true });
 const sortModes = new Set(['name-asc', 'name-desc', 'count-desc', 'count-asc']);
+let sortMode = 'name-asc';
 let materials = [];
 let activeRequest = false;
 const opened = new Set();
@@ -16,15 +17,28 @@ function element(tag, className, text) {
   return node;
 }
 
+function updateSortHeadings() {
+  for (const field of ['name', 'count']) {
+    const button = $('sort-' + field);
+    const active = sortMode.startsWith(field + '-');
+    const ascending = sortMode.endsWith('-asc');
+    const nextDirection = active && ascending ? 'по убыванию' : 'по возрастанию';
+    const label = field === 'name' ? 'Название' : 'Количество';
+    button.setAttribute('aria-pressed', String(active));
+    button.querySelector('.sort-arrow').textContent = active ? (ascending ? '↑' : '↓') : '↕';
+    button.setAttribute('aria-label', label + (active ? ', сортировка ' + (ascending ? 'по возрастанию' : 'по убыванию') : '') + '. Сортировать ' + nextDirection);
+    button.title = 'Сортировать ' + nextDirection;
+  }
+}
+
 function render() {
   const query = $('stock-search').value.trim().toLocaleLowerCase('ru').replaceAll('ё', 'е');
   const rows = materials.filter(row => row.label.toLocaleLowerCase('ru').replaceAll('ё', 'е').includes(query));
   const byName = (a, b) => names.compare(a.label, b.label) || a.material.localeCompare(b.material);
-  const mode = $('stock-sort').value;
   rows.sort((a, b) => {
-    if (mode === 'count-desc') return b.total - a.total || byName(a, b);
-    if (mode === 'count-asc') return a.total - b.total || byName(a, b);
-    return mode === 'name-desc' ? byName(b, a) : byName(a, b);
+    if (sortMode === 'count-desc') return b.total - a.total || byName(a, b);
+    if (sortMode === 'count-asc') return a.total - b.total || byName(a, b);
+    return sortMode === 'name-desc' ? byName(b, a) : byName(a, b);
   });
   const fragment = document.createDocumentFragment();
   for (const row of rows) {
@@ -86,14 +100,19 @@ async function refresh() {
 
 try {
   const saved = localStorage.getItem('gtnh-stock-sort');
-  if (sortModes.has(saved)) $('stock-sort').value = saved;
+  if (sortModes.has(saved)) sortMode = saved;
 } catch { /* Sorting also works when browser storage is disabled. */ }
 
+updateSortHeadings();
 $('stock-search').addEventListener('input', render);
-$('stock-sort').addEventListener('change', () => {
-  try { localStorage.setItem('gtnh-stock-sort', $('stock-sort').value); } catch { /* Optional preference. */ }
-  render();
-});
+for (const field of ['name', 'count']) {
+  $('sort-' + field).addEventListener('click', () => {
+    sortMode = sortMode === field + '-asc' ? field + '-desc' : field + '-asc';
+    try { localStorage.setItem('gtnh-stock-sort', sortMode); } catch { /* Optional preference. */ }
+    updateSortHeadings();
+    render();
+  });
+}
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 // The collector checks hourly; an open tab picks up a new release promptly.
 setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
