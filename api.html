@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>GTNH · JSON API истории</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css?v=8">
+</head>
+<body class="stocks-page">
+  <header class="topbar">
+    <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
+    <nav class="site-nav" aria-label="Разделы"><a href="./">Карта</a><a href="stocks.html">Запасы</a></nav>
+  </header>
+  <main class="stock-main"><article class="stock-container api-docs">
+    <h1>JSON API истории</h1>
+    <p>Доступен всем без ключа. Только данные об изменениях GT-машин, труб и кабелей; координаты совпадают с относительными координатами карты. Обновление — вместе с картой.</p>
+    <h2>Запрос за промежуток игрового времени</h2>
+    <pre><code>GET https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/changes?from=00:00:00&amp;to=01:00:00</code></pre>
+    <p><a href="https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/changes?from=00:00:00&amp;to=01:00:00">Открыть пример JSON</a>. Можно указывать секунды: <code>from=3600&amp;to=7200</code>, либо тики: <code>from_tick=72000&amp;to_tick=144000</code>. Один тик = 1/20 секунды. Начало включено, конец исключён: <code>[from, to)</code>.</p>
+    <h2>Запрос по дате и времени</h2>
+    <pre><code>GET /api/v1/changes?clock=utc&amp;from=2026-10-24T00:00:00Z&amp;to=2026-10-25T00:00:00Z</code></pre>
+    <p>Обязателен часовой пояс: <code>Z</code> или смещение, например <code>+10:00</code> (знак «+» в URL кодируется как <code>%2B</code>). Поле <code>precision</code> показывает, известно ли точное время: <code>recorded</code> — запись Audit; <code>observed</code> — изменение обнаружено при публикации снимка. Фильтр UTC использует поле <code>at</code>; для наблюдений это время обнаружения, а не точное время действия игрока.</p>
+    <h2>Несколько промежутков</h2>
+    <pre><code>POST /api/v1/changes
+Content-Type: application/json
+
+{
+  "clock": "igt",
+  "intervals": [
+    {"from": "01:00:00", "to": "02:00:00"},
+    {"from": "03:00:00", "to": "04:00:00"}
+  ],
+  "limit": 1000
+}</code></pre>
+    <p>До 20 промежутков; пересечения не дублируют события. Для GET такой же массив можно передать в параметре <code>intervals</code> как JSON с URL-кодированием.</p>
+    <h2>События</h2>
+    <table><thead><tr><th>Тип</th><th>Значение</th></tr></thead><tbody>
+      <tr><td><code>added</code></td><td>Добавлен блок</td></tr>
+      <tr><td><code>changed</code></td><td>Замена блока, поворот или изменение известных соединений</td></tr>
+      <tr><td><code>removed</code></td><td>Блок удалён; время удаления обычно известно лишь по снимку</td></tr>
+      <tr><td><code>possible_move</code></td><td>Возможный перенос: в одной публикации найдена единственная пара добавления и удаления такого типа блока. Это предположение, а не доказательство. Исходные события сохранены, их ID находятся в <code>related_event_ids</code></td></tr>
+      <tr><td><code>initial</code></td><td>Блок из начального снимка; время его установки неизвестно. Не входит в ответ по умолчанию</td></tr>
+    </tbody></table>
+    <p>Каждая запись содержит стабильный <code>id</code>, <code>tick</code>, время <code>at</code>, первое наблюдение <code>observed_at</code>, состояния <code>before</code> / <code>after</code> и список <code>changed_fields</code>. В <code>precision</code> у возможного переноса указано <code>inferred</code>, у начального снимка — <code>initial</code>. Несколько состояний одного блока, существовавших ноль тиков, не создают лишние события.</p>
+    <h2>Фильтры и скачивание</h2>
+    <ul>
+      <li><code>type=added,removed</code> — типы событий; <code>type=moved</code> — псевдоним <code>possible_move</code>.</li>
+      <li><code>dimension=0</code> — измерение.</li>
+      <li><code>limit=200</code> — размер страницы, максимум 1000. Следующая страница: тот же запрос и <code>cursor</code> из поля <code>next_cursor</code>. Параметры и размер страницы сохраняйте прежними.</li>
+      <li><code>download=1</code> — скачать JSON страницы файлом. Для всего результата пройдите страницы либо скачайте <a href="api/v1/events.json">полный опубликованный журнал</a>.</li>
+    </ul>
+    <p><code>total</code> — число совпавших записей, <code>returned</code> — число записей на странице, <code>counts</code> — количества по типам во всём результате. Кандидаты переносов считаются отдельно и не заменяют добавления/удаления. Поддерживается CORS для любых сайтов; серверных логов, игроков, UUID и содержимого инвентарей в ответе нет.</p>
+    <p>Ошибки: <code>400</code> — неверные параметры; <code>409</code> — журнал обновился между страницами, начните запрос заново; <code>413</code> — слишком большой запрос; <code>415</code> — POST без JSON; <code>502</code> — источник временно недоступен. При выдаче последней кешированной копии заголовок <code>X-Data-Stale: true</code> предупреждает о недоступном источнике.</p>
+  </article></main>
+</body>
+</html>
