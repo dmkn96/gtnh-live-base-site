@@ -17,9 +17,13 @@
   <main class="stock-main"><article class="stock-container api-docs">
     <h1>JSON API истории</h1>
     <p>Доступен всем без ключа. Только данные об изменениях GT-машин, труб и кабелей; координаты совпадают с относительными координатами карты. Обновление — вместе с картой.</p>
+    <p>В скриптах укажите имя приложения в HTTP-заголовке <code>User-Agent</code>, например <code>GTNH-History-Client/1.0</code>. Браузер заполняет его сам. Стандартный <code>Python-urllib</code> может получить ошибку 403/1010 ещё до API — это <a href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/">проверка клиента на стороне Cloudflare</a>, а не требование авторизации.</p>
     <h2>Запрос за промежуток игрового времени</h2>
     <pre><code>GET https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/changes?from=00:00:00&amp;to=01:00:00</code></pre>
     <p><a href="https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/changes?from=00:00:00&amp;to=01:00:00">Открыть пример JSON</a>. Можно указывать секунды: <code>from=3600&amp;to=7200</code>, либо тики: <code>from_tick=72000&amp;to_tick=144000</code>. Один тик = 1/20 секунды. Начало включено, конец исключён: <code>[from, to)</code>.</p>
+    <pre><code>curl -A 'GTNH-History-Client/1.0' \
+  'https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/changes?from=01:00:00&amp;to=02:00:00&amp;download=1' \
+  -o changes.json</code></pre>
     <h2>Запрос по дате и времени</h2>
     <pre><code>GET /api/v1/changes?clock=utc&amp;from=2026-10-24T00:00:00Z&amp;to=2026-10-25T00:00:00Z</code></pre>
     <p>Обязателен часовой пояс: <code>Z</code> или смещение, например <code>+10:00</code> (знак «+» в URL кодируется как <code>%2B</code>). Поле <code>precision</code> показывает, известно ли точное время: <code>recorded</code> — запись Audit; <code>observed</code> — изменение обнаружено при публикации снимка. Фильтр UTC использует поле <code>at</code>; для наблюдений это время обнаружения, а не точное время действия игрока.</p>
