@@ -8,8 +8,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>GTNH · Запасы</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=5">
-  <script type="module" src="assets/stocks.js?v=2"></script>
+  <link rel="stylesheet" href="assets/style.css?v=6">
+  <script type="module" src="assets/stocks.js?v=3"></script>
 </head>
 <body class="stocks-page">
   <header class="topbar">
@@ -21,8 +21,17 @@
     <section class="stock-container" aria-labelledby="stock-heading">
       <div class="stock-heading"><h1 id="stock-heading">Запасы</h1><span>Simple Storage</span></div>
       <p class="stock-caption">Слитки + пластины, шт.</p>
-      <label class="sr-only" for="stock-search">Найти материал</label>
-      <input id="stock-search" class="stock-search" type="search" placeholder="Найти материал…" autocomplete="off" spellcheck="false">
+      <div class="stock-toolbar">
+        <label class="sr-only" for="stock-search">Найти материал</label>
+        <input id="stock-search" class="stock-search" type="search" placeholder="Найти материал…" autocomplete="off" spellcheck="false">
+        <label class="sr-only" for="stock-sort">Сортировка материалов</label>
+        <select id="stock-sort" class="stock-sort">
+          <option value="name-asc">Название: А → Я</option>
+          <option value="name-desc">Название: Я → А</option>
+          <option value="count-desc">Количество: по убыванию</option>
+          <option value="count-asc">Количество: по возрастанию</option>
+        </select>
+      </div>
       <p id="stock-notice" class="stock-notice" role="status">Загрузка…</p>
       <div id="stock-list" class="stock-list" aria-label="Количество материалов" aria-busy="true"></div>
       <p id="stock-empty" class="stock-empty" hidden>Ничего не найдено.</p>

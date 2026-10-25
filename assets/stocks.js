@@ -3,6 +3,8 @@ import { materialIcon } from './material-icons.js';
 const $ = id => document.getElementById(id);
 const number = new Intl.NumberFormat('ru-RU');
 const formNames = { ingot: 'Слитки', plate: 'Пластины', gem: 'Алмазы', dust: 'Редстоун' };
+const names = new Intl.Collator('ru', { sensitivity: 'base', numeric: true });
+const sortModes = new Set(['name-asc', 'name-desc', 'count-desc', 'count-asc']);
 let materials = [];
 let activeRequest = false;
 const opened = new Set();
@@ -17,6 +19,13 @@ function element(tag, className, text) {
 function render() {
   const query = $('stock-search').value.trim().toLocaleLowerCase('ru').replaceAll('ё', 'е');
   const rows = materials.filter(row => row.label.toLocaleLowerCase('ru').replaceAll('ё', 'е').includes(query));
+  const byName = (a, b) => names.compare(a.label, b.label) || a.material.localeCompare(b.material);
+  const mode = $('stock-sort').value;
+  rows.sort((a, b) => {
+    if (mode === 'count-desc') return b.total - a.total || byName(a, b);
+    if (mode === 'count-asc') return a.total - b.total || byName(a, b);
+    return mode === 'name-desc' ? byName(b, a) : byName(a, b);
+  });
   const fragment = document.createDocumentFragment();
   for (const row of rows) {
     const forms = Object.entries(row.forms);
@@ -54,7 +63,7 @@ async function refresh() {
     if (!response.ok) throw new Error('http');
     const data = await response.json();
     if (data.schema !== 1 || !Array.isArray(data.materials) || !['ready', 'stale', 'unavailable'].includes(data.status)) throw new Error('schema');
-    materials = data.materials.sort((a, b) => a.label.localeCompare(b.label, 'ru'));
+    materials = data.materials;
     $('stock-list').setAttribute('aria-busy', 'false');
     $('stock-led').className = 'status-led ' + (data.status === 'ready' ? 'ready' : 'stale');
     $('stock-notice').hidden = data.status === 'ready';
@@ -75,7 +84,16 @@ async function refresh() {
   }
 }
 
+try {
+  const saved = localStorage.getItem('gtnh-stock-sort');
+  if (sortModes.has(saved)) $('stock-sort').value = saved;
+} catch { /* Sorting also works when browser storage is disabled. */ }
+
 $('stock-search').addEventListener('input', render);
+$('stock-sort').addEventListener('change', () => {
+  try { localStorage.setItem('gtnh-stock-sort', $('stock-sort').value); } catch { /* Optional preference. */ }
+  render();
+});
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 // The collector checks hourly; an open tab picks up a new release promptly.
 setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
