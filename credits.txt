@@ -8,6 +8,8 @@ Every distributed texture, its original source path and SHA-256 are listed in as
 Original PNG assets are provided directly in assets/textures/gt/ and can be replaced independently of the viewer.
 No Minecraft vanilla textures, inventories, custom player text or world NBT are included.
 Texture profiles represent machine types; exact paint, covers, addons and running state are not recorded.
+Material icons use original GT item sprites, tinted in the browser using the material colors from MaterialsInit.java and MaterialsAlloy.java in the same release.
+Their base/overlay PNGs are also listed in the texture manifest; the selected colors and layer profiles are provided in assets/material-icons.json.
 Three.js 0.180.0 — MIT license, Copyright 2010-2025 Three.js Authors.
 See THREE-LICENSE.txt for the complete license.
 Machine registry names and numerical identifiers were obtained from GT5-Unofficial 5.09.54.205:

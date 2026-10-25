@@ -1,3 +1,5 @@
+import { materialIcon } from './material-icons.js';
+
 const $ = id => document.getElementById(id);
 const number = new Intl.NumberFormat('ru-RU');
 const formNames = { ingot: 'Слитки', plate: 'Пластины', gem: 'Алмазы', dust: 'Редстоун' };
@@ -21,7 +23,8 @@ function render() {
     const expandable = forms.length > 1;
     const group = element(expandable ? 'details' : 'div', 'stock-group' + (expandable ? '' : ' stock-single'));
     const heading = element(expandable ? 'summary' : 'div', 'stock-row');
-    heading.append(element('span', 'stock-name', row.label), element('span', 'stock-count', number.format(row.total)));
+    const mainForm = (forms.find(([, count]) => count > 0) || forms[0])[0];
+    heading.append(materialIcon(row.material, mainForm), element('span', 'stock-name', row.label), element('span', 'stock-count', number.format(row.total)));
     group.append(heading);
     if (expandable) {
       group.open = opened.has(row.material);
@@ -32,7 +35,7 @@ function render() {
       const tree = element('ul', 'stock-tree');
       for (const [form, count] of forms) {
         const branch = element('li');
-        branch.append(element('span', '', formNames[form]), element('span', 'stock-count', number.format(count)));
+        branch.append(materialIcon(row.material, form), element('span', 'stock-name', formNames[form]), element('span', 'stock-count', number.format(count)));
         tree.append(branch);
       }
       group.append(tree);
