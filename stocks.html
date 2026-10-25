@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Запасы металлов, алмазов и редстоуна в Simple Storage.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>GTNH · Запасы</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css?v=4">
+  <script type="module" src="assets/stocks.js?v=1"></script>
+</head>
+<body class="stocks-page">
+  <header class="topbar">
+    <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
+    <nav class="site-nav" aria-label="Разделы"><a href="./">Карта</a><a href="stocks.html" aria-current="page">Запасы</a></nav>
+    <div class="header-actions"><div class="sync"><span id="stock-led" class="status-led"></span><span>Раз в час</span></div></div>
+  </header>
+  <main class="stock-main">
+    <section class="stock-container" aria-labelledby="stock-heading">
+      <div class="stock-heading"><h1 id="stock-heading">Запасы</h1><span>Simple Storage</span></div>
+      <p class="stock-caption">Слитки + пластины, шт.</p>
+      <label class="sr-only" for="stock-search">Найти материал</label>
+      <input id="stock-search" class="stock-search" type="search" placeholder="Найти материал…" autocomplete="off" spellcheck="false">
+      <p id="stock-notice" class="stock-notice" role="status">Загрузка…</p>
+      <div id="stock-list" class="stock-list" aria-label="Количество материалов" aria-busy="true"></div>
+      <p id="stock-empty" class="stock-empty" hidden>Ничего не найдено.</p>
+      <p id="stock-date" class="stock-date" hidden></p>
+    </section>
+  </main>
+</body>
+</html>
