@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Исследованная карта GTNH: известные жилы и вейпоинты в разных измерениях.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>GTNH · Карта</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css?v=8">
+  <link rel="stylesheet" href="assets/vendor/leaflet.css">
+  <link rel="stylesheet" href="assets/map.css?v=1">
+  <script defer src="assets/vendor/leaflet.js"></script>
+  <script type="module" src="assets/map.js?v=1"></script>
+</head>
+<body class="world-map-page">
+  <header class="topbar">
+    <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> Карта</span></a>
+    <nav class="site-nav" aria-label="Разделы"><a href="./">База</a><a href="stocks.html">Запасы</a><a href="map.html" aria-current="page">Карта</a></nav>
+    <div class="header-actions"><span id="map-date" class="map-date">Снимок карты</span></div>
+  </header>
+  <main class="world-map-main">
+    <div id="world-map" aria-label="Исследованная карта мира" tabindex="0"></div>
+    <section class="map-tools" aria-label="Настройки карты">
+      <label><span class="sr-only">Измерение</span><select id="map-dimension" aria-label="Измерение"></select></label>
+      <label id="map-height-field" hidden><span class="sr-only">Высота слоя</span><select id="map-height" aria-label="Высота слоя"></select></label>
+      <label><span class="sr-only">Тип жилы</span><select id="map-ore" aria-label="Тип жилы"><option value="">Все жилы</option></select></label>
+      <div class="map-switches">
+        <label><input id="map-veins" type="checkbox" checked> Жилы</label>
+        <label><input id="map-waypoints" type="checkbox" checked> Метки</label>
+      </div>
+    </section>
+    <p id="map-message" class="map-message" role="status">Загружаем карту…</p>
+    <div class="map-caption"><span id="map-counts"></span><span id="map-coordinates">X — · Z —</span></div>
+    <button id="map-fit" class="map-fit" type="button" title="Показать исследованную карту целиком" aria-label="Вся исследованная карта">⌖</button>
+    <details class="map-about"><summary>О карте</summary><p id="map-coverage"></p><p>Серые области ещё не исследованы в этом снимке. Координаты жил показывают центр рудного чанка.</p><a href="licenses/leaflet.txt">Leaflet · BSD-2-Clause</a></details>
+  </main>
+</body>
+</html>
