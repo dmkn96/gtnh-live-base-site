@@ -1,5 +1,5 @@
-import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers } from './map-model.js';
-import { oreIcon } from './map-ore-icons.js';
+import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers } from './map-model.js?v=2';
+import { oreIcon } from './map-ore-icons.js?v=1';
 
 const byId = id => document.getElementById(id);
 const dimensionSelect = byId('map-dimension'), heightSlider = byId('map-height'), oreSelect = byId('map-ore');
