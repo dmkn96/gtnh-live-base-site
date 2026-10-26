@@ -1,9 +1,13 @@
-import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints } from './map-model.js';
+import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers } from './map-model.js';
+import { oreIcon } from './map-ore-icons.js';
 
 const byId = id => document.getElementById(id);
-const dimensionSelect = byId('map-dimension'), heightSelect = byId('map-height'), oreSelect = byId('map-ore');
+const dimensionSelect = byId('map-dimension'), heightSlider = byId('map-height'), oreSelect = byId('map-ore');
 const showVeins = byId('map-veins'), showWaypoints = byId('map-waypoints'), message = byId('map-message');
-let data, map, raster, markers, dimension, layer;
+const showPlayers = byId('map-players');
+const PLAYERS_URL = 'https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/players';
+let data, oreCatalog, map, raster, markers, playerMarkers, dimension, layer, liveState, liveError = false;
+let pollTimer, pollController, pollDelay = 15000;
 
 function element(tag, content, className) {
   const node = document.createElement(tag);
@@ -22,16 +26,71 @@ function option(value, label) {
 function selectedDimension() { return data.dimensions.find(world => world.id === dimension); }
 function selectedLayer() { return selectedDimension().layers.find(entry => entry.id === layer); }
 
+function veinDetails(vein) {
+  const info = oreCatalog.veins[vein.type], node = element('div', undefined, 'vein-details');
+  node.append(element('strong', info.label));
+  const list = element('ul');
+  for (const material of info.ores) list.append(element('li', oreCatalog.materials[material].label));
+  node.append(list);
+  if (vein.depleted) node.append(element('span', 'Отмечена как истощённая', 'vein-depleted-note'));
+  node.append(element('code', `X ${vein.x} · Z ${vein.z}`));
+  return node;
+}
+
+function updatePlayers() {
+  playerMarkers.clearLayers();
+  const status = byId('map-players-status');
+  if (!showPlayers.checked) { status.textContent = 'Игроки скрыты'; return; }
+  if (liveError) { status.textContent = 'Игроки: нет связи'; return; }
+  if (!liveState) { status.textContent = 'Игроки: подключение…'; return; }
+  if (liveState.status === 'waiting') { status.textContent = 'Игроки: ожидаем сводку'; return; }
+  if (liveState.status === 'stale') { status.textContent = 'Позиции устарели'; return; }
+  if (!liveState.online) { status.textContent = 'Сервер офлайн'; return; }
+  if (Date.now() - liveState.observedAt > 60000) { status.textContent = 'Позиции устарели'; return; }
+  const players = visiblePlayers(liveState, dimension);
+  status.textContent = `В мире ${players.length} · онлайн ${liveState.players.length}`;
+  for (const player of players) {
+    const node = element('div', undefined, 'player-pin');
+    const arrow = element('span', undefined, 'player-heading'); arrow.style.transform = `rotate(${player.yaw + 180}deg)`;
+    node.append(arrow, element('span', player.name.slice(0, 1), 'player-avatar'));
+    const marker = L.marker(point(player.x, player.z), { zIndexOffset: 2000, title: player.name,
+      icon: L.divIcon({ html: node, className: 'player-marker', iconSize: [28, 28], iconAnchor: [14, 14] }) });
+    marker.bindTooltip(element('span', player.name), { permanent: true, direction: 'bottom', offset: [0, 12], className: 'player-label' })
+      .bindPopup(popup(player.name, 'Игрок онлайн', `X ${player.x} · Y ${player.y} · Z ${player.z}`)).addTo(playerMarkers);
+  }
+}
+
+function stopPlayerPoll() {
+  clearTimeout(pollTimer);
+  if (pollController) pollController.abort();
+}
+async function pollPlayers() {
+  if (document.hidden || !showPlayers.checked || pollController) return;
+  const controller = new AbortController(); pollController = controller;
+  const timeout = setTimeout(() => controller.abort(), 6000);
+  try {
+    const response = await fetch(PLAYERS_URL, { signal: controller.signal, cache: 'no-store', credentials: 'omit' });
+    if (!response.ok) throw new Error('players-unavailable');
+    const snapshot = await response.json();
+    if (snapshot.schema !== 1 || !Array.isArray(snapshot.players) || snapshot.players.length > 128 || !Number.isFinite(snapshot.observedAt)) throw new Error('players-schema');
+    liveState = snapshot; liveError = false; pollDelay = 15000;
+  } catch {
+    if (!document.hidden && showPlayers.checked) { liveError = true; pollDelay = Math.min(60000, pollDelay * 2); }
+  } finally {
+    clearTimeout(timeout); pollController = null; updatePlayers();
+    if (!document.hidden && showPlayers.checked) pollTimer = setTimeout(pollPlayers, pollDelay);
+  }
+}
+
 function updateMarkers() {
   markers.clearLayers();
   const veins = visibleVeins(data, dimension, oreSelect.value), waypoints = visibleWaypoints(data, dimension);
   if (showVeins.checked) for (const vein of veins) {
-    const type = data.oreTypes[vein.type];
-    L.circleMarker(point(vein.x, vein.z), {
-      radius: 5, weight: 1.5, color: vein.depleted ? '#809078' : '#17221b',
-      fillColor: type.color, fillOpacity: vein.depleted ? .25 : .88,
-      dashArray: vein.depleted ? '2 3' : null,
-    }).bindTooltip(element('span', type.label)).bindPopup(popup(type.label, vein.depleted ? 'Отмечена как истощённая' : 'Известная жила', `X ${vein.x} · Z ${vein.z}`)).addTo(markers);
+    L.marker(point(vein.x, vein.z), {
+      title: oreCatalog.veins[vein.type].label,
+      icon: L.divIcon({ html: oreIcon(oreCatalog, vein.type, dimension, vein.depleted), className: 'vein-marker', iconSize: [32, 32], iconAnchor: [16, 16] }),
+    }).bindTooltip(() => veinDetails(vein), { direction: 'top', offset: [0, -12], className: 'vein-tooltip' })
+      .bindPopup(() => veinDetails(vein)).addTo(markers);
   }
   if (showWaypoints.checked) for (const waypoint of waypoints) {
     L.circleMarker(point(waypoint.x, waypoint.z), {
@@ -39,10 +98,15 @@ function updateMarkers() {
     }).bindTooltip(element('span', waypoint.name)).bindPopup(popup(waypoint.name, 'Метка JourneyMap', `X ${waypoint.x} · Y ${waypoint.y} · Z ${waypoint.z}`)).addTo(markers);
   }
   byId('map-counts').textContent = `${showVeins.checked ? veins.length : 0} жил · ${showWaypoints.checked ? waypoints.length : 0} меток`;
+  updatePlayers();
 }
 
 function setLayer(id) {
-  layer = id; heightSelect.value = id;
+  layer = id;
+  const layers = heightLayers(selectedDimension());
+  heightSlider.value = String(layers.findIndex(entry => entry.id === id));
+  byId('map-height-label').textContent = selectedLayer().label;
+  heightSlider.setAttribute('aria-valuetext', selectedLayer().label);
   if (raster) map.removeLayer(raster);
   const info = selectedLayer(), present = new Set(info.tiles.map(coordinates => coordinates.join(',')));
   const SparseTiles = L.GridLayer.extend({
@@ -72,8 +136,8 @@ function fit() {
 function changeDimension(id) {
   dimension = id; dimensionSelect.value = String(id);
   const info = selectedDimension();
-  heightSelect.replaceChildren(...info.layers.map(entry => option(entry.id, entry.label)));
-  byId('map-height-field').hidden = info.layers.length < 2;
+  heightSlider.max = String(info.layers.length - 1);
+  byId('nether-depth').hidden = id !== -1 || info.layers.length < 2;
   const keys = [...new Set(visibleVeins(data, id).map(vein => vein.type))].sort((a, b) => data.oreTypes[a].label.localeCompare(data.oreTypes[b].label, 'ru'));
   oreSelect.replaceChildren(option('', 'Все жилы'), ...keys.map(key => option(key, data.oreTypes[key].label)));
   setLayer(info.defaultLayer); updateMarkers();
@@ -83,14 +147,16 @@ function changeDimension(id) {
 }
 
 async function start() {
-  const response = await fetch('world-map/data.json', { cache: 'no-cache' });
-  if (!response.ok) throw new Error('map-unavailable');
-  data = await response.json();
+  const responses = await Promise.all(['world-map/data.json', 'assets/ore-catalog.json'].map(path => fetch(path, { cache: 'no-cache' })));
+  if (responses.some(response => !response.ok)) throw new Error('map-unavailable');
+  [data, oreCatalog] = await Promise.all(responses.map(response => response.json()));
   if (data.schema !== 1 || !data.dimensions.length) throw new Error('map-empty');
+  if (oreCatalog.schema !== 1 || Object.keys(data.oreTypes).some(key => !oreCatalog.veins[key])) throw new Error('ores-unavailable');
   map = L.map('world-map', { crs: L.CRS.Simple, minZoom: -4, maxZoom: 3, zoomSnap: .5,
     zoomControl: false, attributionControl: false, preferCanvas: true });
   L.control.zoom({ position: 'bottomright', zoomInTitle: 'Приблизить', zoomOutTitle: 'Отдалить' }).addTo(map);
   markers = L.layerGroup().addTo(map);
+  playerMarkers = L.layerGroup().addTo(map);
   dimensionSelect.replaceChildren(...data.dimensions.map(world => option(world.id, world.name)));
   const requested = Number(new URLSearchParams(location.hash.slice(1)).get('dim') || 0);
   const initial = data.dimensions.some(world => world.id === requested) ? requested : data.dimensions[0].id;
@@ -99,11 +165,25 @@ async function start() {
   byId('map-date').textContent = `Снимок ${stamp}`;
   byId('map-coverage').textContent = data.coverage;
   dimensionSelect.addEventListener('change', () => changeDimension(Number(dimensionSelect.value)));
-  heightSelect.addEventListener('change', () => setLayer(heightSelect.value));
+  let heightFrame;
+  heightSlider.addEventListener('input', () => {
+    cancelAnimationFrame(heightFrame);
+    heightFrame = requestAnimationFrame(() => setLayer(heightLayers(selectedDimension())[Number(heightSlider.value)].id));
+  });
+  heightSlider.addEventListener('wheel', event => {
+    event.preventDefault();
+    heightSlider.value = String(Math.max(0, Math.min(Number(heightSlider.max), Number(heightSlider.value) - Math.sign(event.deltaY))));
+    heightSlider.dispatchEvent(new Event('input'));
+  }, { passive: false });
   for (const control of [oreSelect, showVeins, showWaypoints]) control.addEventListener('change', updateMarkers);
   byId('map-fit').addEventListener('click', fit);
+  showPlayers.addEventListener('change', () => { stopPlayerPoll(); updatePlayers(); if (showPlayers.checked) setTimeout(pollPlayers, 0); });
+  document.addEventListener('visibilitychange', () => { stopPlayerPoll(); if (!document.hidden) setTimeout(pollPlayers, 0); });
+  window.addEventListener('pagehide', stopPlayerPoll);
+  map.on('zoomend', () => { byId('world-map').style.setProperty('--ore-size', `${Math.max(16, Math.min(32, 28 + map.getZoom() * 4))}px`); });
   map.on('mousemove', event => { byId('map-coordinates').textContent = `X ${Math.floor(event.latlng.lng)} · Z ${Math.floor(-event.latlng.lat)}`; });
   message.hidden = true;
+  pollPlayers();
 }
 
 start().catch(() => { message.hidden = false; message.textContent = 'Не удалось загрузить карту. Обнови страницу чуть позже.'; });

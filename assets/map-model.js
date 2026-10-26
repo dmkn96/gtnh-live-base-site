@@ -10,6 +10,13 @@ export function visibleVeins(data, dimension, type = '') {
 export function visibleWaypoints(data, dimension) {
   return data.waypoints.filter(waypoint => waypoint.dimension === dimension);
 }
+export function visiblePlayers(snapshot, dimension, now = Date.now()) {
+  if (!snapshot || snapshot.schema !== 1 || snapshot.online !== true || !Array.isArray(snapshot.players)
+      || !Number.isFinite(snapshot.observedAt) || now - snapshot.observedAt > 60000 || snapshot.observedAt > now + 10000) return [];
+  return snapshot.players.filter(player => player.dimension === dimension && /^[A-Za-z0-9_]{1,16}$/.test(player.name)
+    && ['x', 'y', 'z', 'yaw'].every(key => Number.isFinite(player[key])));
+}
+export function heightLayers(world) { return world.layers.slice().sort((a, b) => Number(a.id) - Number(b.id)); }
 export function tilePath(dimension, layer, x, z) {
   if (!Number.isInteger(dimension) || !/^(day|\d+)$/.test(layer) || !Number.isInteger(x) || !Number.isInteger(z)) throw new Error('Invalid tile coordinates');
   return `world-map/tiles/${dimension}/${layer}/${x},${z}.png`;

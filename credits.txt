@@ -6,7 +6,7 @@ Upstream attribution also credits Jimbno and UU-Tex: https://github.com/Jimbno/U
 Copies of the LGPL and incorporated GPL terms: licenses/GT-LGPL-3.0.txt and licenses/GPL-3.0.txt
 Every distributed texture, its original source path and SHA-256 are listed in assets/textures/manifest.json.
 Original PNG assets are provided directly in assets/textures/gt/ and can be replaced independently of the viewer.
-No Minecraft vanilla textures, inventories, custom player text or world NBT are included.
+The base model and stocks exclude world NBT and raw inventories. The separate JourneyMap page shows the requested explored terrain, waypoint labels and online player nicknames/positions.
 Texture profiles represent machine types; exact paint, covers, addons and running state are not recorded.
 Material icons use original GT item sprites, tinted in the browser using the material colors from MaterialsInit.java and MaterialsAlloy.java in the same release.
 Their base/overlay PNGs are also listed in the texture manifest; the selected colors and layer profiles are provided in assets/material-icons.json.
@@ -20,3 +20,8 @@ The data collector reads the local output of GTNH Speedrun Audit 0.9.0:
 https://github.com/OrderedSet86/gtnh-speedrun-audit/tree/v0.9.0
 Behavioral reference, without copying its source or assets:
 https://orderedset86.github.io/gtnh-runs/runs/20261022_nekonou_moon/
+
+JourneyMap ore markers use unchanged sprites from the active Modernity-GTNH resource pack and GregTech, with the same primary-material tint and layering as VisualProspecting.
+Modernity-GTNH: https://github.com/ModernityGTNH/Modernity-GTNH ; see licenses/modernity.txt.
+VisualProspecting: https://github.com/GTNewHorizons/VisualProspecting ; MIT, see licenses/visualprospecting.txt.
+Sprite provenance and original resource paths: assets/ore-catalog.json. Russian ore labels include a concise UI glossary; vein compositions come from the installed GregTech release.
