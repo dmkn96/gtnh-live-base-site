@@ -1,4 +1,4 @@
-import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers } from './map-model.js?v=2';
+import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers, shouldDrawVeins } from './map-model.js?v=3';
 import { oreIcon } from './map-ore-icons.js?v=1';
 
 const byId = id => document.getElementById(id);
@@ -8,6 +8,7 @@ const showPlayers = byId('map-players');
 const PLAYERS_URL = 'https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/players';
 let data, oreCatalog, map, raster, markers, playerMarkers, dimension, layer, liveState, liveError = false;
 let pollTimer, pollController, pollDelay = 15000;
+let veinsRendered = false;
 
 function element(tag, content, className) {
   const node = document.createElement(tag);
@@ -85,7 +86,8 @@ async function pollPlayers() {
 function updateMarkers() {
   markers.clearLayers();
   const veins = visibleVeins(data, dimension, oreSelect.value), waypoints = visibleWaypoints(data, dimension);
-  if (showVeins.checked) for (const vein of veins) {
+  veinsRendered = shouldDrawVeins(map.getZoom(), showVeins.checked);
+  if (veinsRendered) for (const vein of veins) {
     L.marker(point(vein.x, vein.z), {
       title: oreCatalog.veins[vein.type].label,
       icon: L.divIcon({ html: oreIcon(oreCatalog, vein.type, dimension, vein.depleted), className: 'vein-marker', iconSize: [32, 32], iconAnchor: [16, 16] }),
@@ -97,7 +99,8 @@ function updateMarkers() {
       radius: 7, weight: 2.5, color: '#e8efdf', fillColor: waypoint.color, fillOpacity: 1,
     }).bindTooltip(element('span', waypoint.name)).bindPopup(popup(waypoint.name, 'Метка JourneyMap', `X ${waypoint.x} · Y ${waypoint.y} · Z ${waypoint.z}`)).addTo(markers);
   }
-  byId('map-counts').textContent = `${showVeins.checked ? veins.length : 0} жил · ${showWaypoints.checked ? waypoints.length : 0} меток`;
+  const veinCount = showVeins.checked && !veinsRendered ? 'Жилы скрыты' : `${veinsRendered ? veins.length : 0} жил`;
+  byId('map-counts').textContent = `${veinCount} · ${showWaypoints.checked ? waypoints.length : 0} меток`;
   updatePlayers();
 }
 
@@ -140,9 +143,10 @@ function changeDimension(id) {
   byId('nether-depth').hidden = id !== -1 || info.layers.length < 2;
   const keys = [...new Set(visibleVeins(data, id).map(vein => vein.type))].sort((a, b) => data.oreTypes[a].label.localeCompare(data.oreTypes[b].label, 'ru'));
   oreSelect.replaceChildren(option('', 'Все жилы'), ...keys.map(key => option(key, data.oreTypes[key].label)));
-  setLayer(info.defaultLayer); updateMarkers();
+  setLayer(info.defaultLayer);
   const home = visibleWaypoints(data, id).find(entry => /^home$|^дом$/iu.test(entry.name));
   if (home) map.setView(point(home.x, home.z), -1, { animate: false }); else fit();
+  updateMarkers();
   history.replaceState(null, '', `#dim=${id}`);
 }
 
@@ -180,7 +184,10 @@ async function start() {
   showPlayers.addEventListener('change', () => { stopPlayerPoll(); updatePlayers(); if (showPlayers.checked) setTimeout(pollPlayers, 0); });
   document.addEventListener('visibilitychange', () => { stopPlayerPoll(); if (!document.hidden) setTimeout(pollPlayers, 0); });
   window.addEventListener('pagehide', stopPlayerPoll);
-  map.on('zoomend', () => { byId('world-map').style.setProperty('--ore-size', `${Math.max(16, Math.min(32, 28 + map.getZoom() * 4))}px`); });
+  map.on('zoomend', () => {
+    byId('world-map').style.setProperty('--ore-size', `${Math.max(24, Math.min(32, 28 + map.getZoom() * 4))}px`);
+    if (shouldDrawVeins(map.getZoom(), showVeins.checked) !== veinsRendered) updateMarkers();
+  });
   map.on('mousemove', event => { byId('map-coordinates').textContent = `X ${Math.floor(event.latlng.lng)} · Z ${Math.floor(-event.latlng.lat)}`; });
   message.hidden = true;
   pollPlayers();

@@ -17,6 +17,9 @@ export function visiblePlayers(snapshot, dimension, now = Date.now()) {
     && ['x', 'y', 'z', 'yaw'].every(key => Number.isFinite(player[key])));
 }
 export function heightLayers(world) { return world.layers.slice().sort((a, b) => Number(a.id) - Number(b.id)); }
+export function shouldDrawVeins(zoom, enabled = true) {
+  return enabled && Number.isFinite(zoom) && zoom >= -1;
+}
 export function tilePath(dimension, layer, x, z) {
   if (!Number.isInteger(dimension) || !/^(day|\d+)$/.test(layer) || !Number.isInteger(x) || !Number.isInteger(z)) throw new Error('Invalid tile coordinates');
   return `world-map/tiles/${dimension}/${layer}/${x},${z}.png`;
