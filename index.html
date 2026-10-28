@@ -8,19 +8,18 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>GTNH · База</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=8">
-  <script type="module" src="assets/app.js?v=4"></script>
+  <link rel="stylesheet" href="assets/style.css?v=9">
+  <script type="module" src="assets/app.js?v=5"></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
     <nav class="site-nav" aria-label="Разделы"><a href="./" aria-current="page">База</a><a href="stocks.html">Запасы</a><a href="map.html">Карта</a></nav>
-    <div class="header-actions"><div class="sync"><span id="status-led" class="status-led"></span><span id="update">Загрузка…</span></div><button id="panel-toggle" class="filter-toggle" aria-label="Фильтры" aria-controls="sidebar" aria-expanded="false">☷ <span>Фильтры</span></button></div>
+    <div class="header-actions"><label id="dimension-field" class="world-select" for="dimension"><span>Мир</span><select id="dimension" aria-label="Мир 3D-сцены"><option value="0">Верхний мир</option></select></label><div class="sync"><span id="status-led" class="status-led"></span><span id="update">Загрузка…</span></div><button id="panel-toggle" class="filter-toggle" aria-label="Фильтры" aria-controls="sidebar" aria-expanded="false">☷ <span>Фильтры</span></button></div>
   </header>
   <main>
     <aside id="sidebar" inert aria-label="Фильтры">
       <div class="drawer-heading"><h1>Фильтры</h1><button id="panel-close" class="icon-button" aria-label="Закрыть фильтры">×</button></div>
-      <div id="dimension-field"><label class="field-label" for="dimension">Измерение</label><select id="dimension"><option value="0">Верхний мир</option></select></div>
       <div class="filter-title"><h2>Уровень</h2><button id="tiers-all" class="text-button">Все</button></div><div id="tiers" class="filter-list"></div>
       <div class="filter-title"><h2>Объекты</h2><button id="kinds-all" class="text-button">Все</button></div><div id="kinds" class="filter-list"></div>
       <label class="visual-option"><input id="textures-toggle" type="checkbox" checked> Текстуры</label>
@@ -30,7 +29,7 @@
       <div id="scene"></div>
       <div class="base-counts"><span><b id="machine-count">0</b> машин</span><span class="separator">·</span><span><b id="pipe-count">0</b> труб и кабелей</span></div><span id="visible-count" class="sr-only"></span>
       <div class="view-actions"><button id="fit" class="icon-button" title="Вся база" aria-label="Вся база">⌖</button><button id="top-view" class="icon-button" title="Вид сверху" aria-label="Вид сверху">⊞</button><button id="grid-toggle" class="icon-button active" title="Сетка" aria-label="Сетка" aria-pressed="true">▦</button></div>
-      <div id="empty" class="empty" hidden><h2>Нет объектов</h2><p>Проверьте фильтры.</p></div>
+      <div id="empty" class="empty" hidden><h2 id="empty-title">Нет объектов</h2><p id="empty-message">Проверьте фильтры.</p></div>
       <div id="error" class="error" role="alert" hidden></div><div id="notice" class="notice" hidden></div><div id="tooltip" class="tooltip" role="status" hidden></div>
       <section id="object-detail" class="object-detail" aria-label="Выбранный объект" hidden><div class="card-heading"><strong id="object-name"></strong><button id="object-close" class="text-button" aria-label="Закрыть объект">×</button></div><p id="object-purpose"></p><p id="object-meta" class="muted"></p><details id="object-more"><summary>Подробнее</summary><dl id="object-facts"></dl></details></section>
       <section id="activity-detail" class="activity-detail" aria-label="Изменения" hidden><div class="card-heading"><strong id="activity-detail-title"></strong><button id="activity-close" class="text-button" aria-label="Закрыть изменения">×</button></div><p id="activity-detail-summary"></p><ul id="activity-detail-list"></ul><small id="activity-detail-note"></small></section>
