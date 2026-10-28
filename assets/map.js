@@ -193,6 +193,9 @@ function changeDimension(id) {
 }
 
 async function start() {
+  showVeins.checked = false;
+  showWaypoints.checked = false;
+  showPlayers.checked = true;
   const responses = await Promise.all(['world-map/data.json', 'assets/ore-catalog.json'].map(path => fetch(path, { cache: 'no-cache' })));
   if (responses.some(response => !response.ok)) throw new Error('map-unavailable');
   [data, oreCatalog] = await Promise.all(responses.map(response => response.json()));
