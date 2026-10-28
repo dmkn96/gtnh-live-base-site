@@ -1,4 +1,5 @@
 import { materialIcon } from './material-icons.js';
+import { needsPlates } from './stock-alerts.js?v=1';
 
 const $ = id => document.getElementById(id);
 const number = new Intl.NumberFormat('ru-RU');
@@ -47,7 +48,14 @@ function render() {
     const group = element(expandable ? 'details' : 'div', 'stock-group' + (expandable ? '' : ' stock-single'));
     const heading = element(expandable ? 'summary' : 'div', 'stock-row');
     const mainForm = (forms.find(([, count]) => count > 0) || forms[0])[0];
-    heading.append(materialIcon(row.material, mainForm), element('span', 'stock-name', row.label), element('span', 'stock-count', number.format(row.total)));
+    const total = element('span', 'stock-total');
+    total.append(element('span', 'stock-count', number.format(row.total)));
+    if (needsPlates(row)) {
+      const alert = element('span', 'stock-plate-alert', '⚑ Сделать пластины');
+      alert.title = `Пластин: ${number.format(row.forms.plate)}. Слитков: ${number.format(row.forms.ingot)}. Пластин меньше 20% от количества слитков.`;
+      total.append(alert);
+    }
+    heading.append(materialIcon(row.material, mainForm), element('span', 'stock-name', row.label), total);
     group.append(heading);
     if (expandable) {
       group.open = opened.has(row.material);
@@ -85,7 +93,7 @@ async function refresh() {
     const date = new Date(data.observed_at);
     $('stock-date').hidden = !data.observed_at || !Number.isFinite(date.getTime());
     $('stock-date').textContent = 'Последнее изменение: ' + date.toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    $('stock-date').title = 'Проверка каждый час, пока на сервере есть игроки. Сумма в штуках, без пересчёта форм. Алмазы — обычные камни; редстоун — пыль.';
+    $('stock-date').title = 'Проверка каждый час на работающем сервере. Сумма в штуках, без пересчёта форм. Алмазы — обычные камни; редстоун — пыль.';
     render();
     if (data.status === 'unavailable') $('stock-empty').hidden = true;
   } catch {
