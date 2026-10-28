@@ -1,4 +1,4 @@
-import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers, shouldDrawVeins } from './map-model.js?v=3';
+import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers, shouldDrawVeins } from './map-model.js?v=4';
 import { oreIcon } from './map-ore-icons.js?v=1';
 
 const byId = id => document.getElementById(id);
@@ -9,6 +9,47 @@ const PLAYERS_URL = 'https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt
 let data, oreCatalog, map, raster, markers, playerMarkers, dimension, layer, liveState, liveError = false;
 let pollTimer, pollController, pollDelay = 15000;
 let veinsRendered = false;
+let terrainTimer, terrainController;
+
+function updateTerrainStamp() {
+  const stamp = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Asia/Seoul', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(data.updatedAt));
+  byId('map-date').textContent = `${data.refresh ? 'Обновлено' : 'Снимок'} ${stamp}`;
+  byId('map-coverage').textContent = data.coverage;
+}
+function stopTerrainPoll() {
+  clearTimeout(terrainTimer); terrainController?.abort(); terrainController = null;
+}
+async function pollTerrain() {
+  if (document.hidden) return;
+  const controller = new AbortController(); terrainController = controller;
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`world-map/data.json?check=${Date.now()}`, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) throw new Error('terrain-unavailable');
+    const next = await response.json();
+    if (next.schema !== 1 || !next.dimensions?.length) throw new Error('terrain-schema');
+    if (next.contentHash !== data.contentHash) {
+      const oldDimension = dimension, oldLayer = layer;
+      data = next;
+      dimensionSelect.replaceChildren(...data.dimensions.map(world => option(world.id, world.name)));
+      if (data.dimensions.some(world => world.id === oldDimension)) {
+        dimensionSelect.value = String(oldDimension);
+        setLayer(selectedDimension().layers.some(entry => entry.id === oldLayer) ? oldLayer : selectedDimension().defaultLayer);
+        updateMarkers();
+      } else changeDimension(data.dimensions[0].id);
+      updateTerrainStamp();
+    }
+    byId('map-date').title = 'Время по Сеулу. Изменения карты проверяются раз в минуту.';
+  } catch {
+    if (!document.hidden) byId('map-date').title = 'Проверка обновлений недоступна. Показана последняя загруженная карта.';
+  } finally {
+    clearTimeout(timeout);
+    if (terrainController === controller) {
+      terrainController = null;
+      if (!document.hidden) terrainTimer = setTimeout(pollTerrain, 60000);
+    }
+  }
+}
 
 function element(tag, content, className) {
   const node = document.createElement(tag);
@@ -122,7 +163,8 @@ function setLayer(id) {
       const tile = element('img'); tile.alt = ''; tile.width = tile.height = data.tileSize;
       tile.onload = () => done(null, tile);
       tile.onerror = () => { tile.classList.add('map-missing-tile'); done(null, tile); };
-      tile.src = tilePath(dimension, layer, coordinates.x, coordinates.y);
+      const hash = data.tiles[`tiles/${dimension}/${layer}/${coordinates.x},${coordinates.y}.png`];
+      tile.src = tilePath(dimension, layer, coordinates.x, coordinates.y, hash);
       return tile;
     },
   });
@@ -165,9 +207,7 @@ async function start() {
   const requested = Number(new URLSearchParams(location.hash.slice(1)).get('dim') || 0);
   const initial = data.dimensions.some(world => world.id === requested) ? requested : data.dimensions[0].id;
   changeDimension(initial);
-  const stamp = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Asia/Seoul', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(data.updatedAt));
-  byId('map-date').textContent = `Снимок ${stamp}`;
-  byId('map-coverage').textContent = data.coverage;
+  updateTerrainStamp();
   dimensionSelect.addEventListener('change', () => changeDimension(Number(dimensionSelect.value)));
   let heightFrame;
   heightSlider.addEventListener('input', () => {
@@ -182,8 +222,12 @@ async function start() {
   for (const control of [oreSelect, showVeins, showWaypoints]) control.addEventListener('change', updateMarkers);
   byId('map-fit').addEventListener('click', fit);
   showPlayers.addEventListener('change', () => { stopPlayerPoll(); updatePlayers(); if (showPlayers.checked) setTimeout(pollPlayers, 0); });
-  document.addEventListener('visibilitychange', () => { stopPlayerPoll(); if (!document.hidden) setTimeout(pollPlayers, 0); });
+  document.addEventListener('visibilitychange', () => {
+    stopPlayerPoll(); stopTerrainPoll();
+    if (!document.hidden) { setTimeout(pollPlayers, 0); setTimeout(pollTerrain, 0); }
+  });
   window.addEventListener('pagehide', stopPlayerPoll);
+  window.addEventListener('pagehide', stopTerrainPoll);
   map.on('zoomend', () => {
     byId('world-map').style.setProperty('--ore-size', `${Math.max(24, Math.min(32, 28 + map.getZoom() * 4))}px`);
     if (shouldDrawVeins(map.getZoom(), showVeins.checked) !== veinsRendered) updateMarkers();
@@ -191,6 +235,7 @@ async function start() {
   map.on('mousemove', event => { byId('map-coordinates').textContent = `X ${Math.floor(event.latlng.lng)} · Z ${Math.floor(-event.latlng.lat)}`; });
   message.hidden = true;
   pollPlayers();
+  terrainTimer = setTimeout(pollTerrain, 60000);
 }
 
 start().catch(() => { message.hidden = false; message.textContent = 'Не удалось загрузить карту. Обнови страницу чуть позже.'; });

@@ -20,7 +20,8 @@ export function heightLayers(world) { return world.layers.slice().sort((a, b) =>
 export function shouldDrawVeins(zoom, enabled = true) {
   return enabled && Number.isFinite(zoom) && zoom >= -1;
 }
-export function tilePath(dimension, layer, x, z) {
+export function tilePath(dimension, layer, x, z, hash = '') {
   if (!Number.isInteger(dimension) || !/^(day|\d+)$/.test(layer) || !Number.isInteger(x) || !Number.isInteger(z)) throw new Error('Invalid tile coordinates');
-  return `world-map/tiles/${dimension}/${layer}/${x},${z}.png`;
+  if (hash && !/^[a-f0-9]{64}$/.test(hash)) throw new Error('Invalid tile digest');
+  return `world-map/tiles/${dimension}/${layer}/${x},${z}.png${hash ? `?v=${hash}` : ''}`;
 }
