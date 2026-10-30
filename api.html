@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>GTNH · JSON API истории</title>
+  <title>GTNH · JSON API</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css?v=8">
 </head>
@@ -15,8 +15,24 @@
     <nav class="site-nav" aria-label="Разделы"><a href="./">База</a><a href="stocks.html">Запасы</a><a href="map.html">Карта</a></nav>
   </header>
   <main class="stock-main"><article class="stock-container api-docs">
-    <h1>JSON API истории</h1>
-    <p>Доступен всем без ключа. Только данные об изменениях GT-машин, труб и кабелей; координаты совпадают с относительными координатами карты. Обновление — вместе с картой.</p>
+    <h1>JSON API</h1>
+    <p>Доступен всем без ключа. История базы и запасы Simple Storage обновляются вместе с картой в существующем часовом цикле.</p>
+    <h2>Всё хранилище Simple Storage</h2>
+    <pre><code>GET https://dmkn96.github.io/gtnh-live-base-site/api/v1/storage.json</code></pre>
+    <p><a href="api/v1/storage.json">Открыть полный JSON хранилища</a>. Ответ содержит все сохранённые предметы подключённых сетей Simple Storage, без отбора по материалу или форме и без пагинации. Страница «Запасы» по-прежнему использует <a href="stocks.json">stocks.json</a>: слитки, обычные пластины, алмазы и редстоун.</p>
+    <pre><code>{
+  "schema": 1,
+  "status": "ready",
+  "observed_at": "2026-10-30T05:00:00Z",
+  "total_items": 64,
+  "items": [
+    {"item": "minecraft:cobblestone", "damage": 0, "nbt_hash": null, "count": 64}
+  ]
+}</code></pre>
+    <p>Пример иллюстративный. <code>item</code> — идентификатор предмета в реестре Forge, <code>damage</code> — сохранённая метадата/износ, <code>count</code> — количество в штуках, <code>total_items</code> — сумма всех количеств. Одинаковые предметы суммируются между сетями; повторные ссылки на одну сеть не дублируют количество. Варианты с разным NBT разделены по <code>nbt_hash</code> — SHA-256 нормализованного тега; без тега значение <code>null</code>. Содержимое NBT не передаётся.</p>
+    <p><code>observed_at</code> — UTC-время последнего обнаруженного изменения содержимого, а не время каждого опроса и не точное время игрового действия. <code>ready</code> — успешное чтение сохранённого состояния; <code>stale</code> — при ошибке оставлена последняя успешная копия; <code>unavailable</code> — успешной копии ещё нет. Это снимок последнего сохранения, обновляемый сборщиком раз в час, а не живой игровой запрос. Инвентари игроков, матрица крафта и содержимое вложенных контейнеров отдельно не разворачиваются.</p>
+    <h2>История базы</h2>
+    <p>Изменения GT-машин, труб и кабелей; координаты совпадают с относительными координатами карты. Следующие параметры относятся к API истории.</p>
     <p>В скриптах укажите имя приложения в HTTP-заголовке <code>User-Agent</code>, например <code>GTNH-History-Client/1.0</code>. Браузер заполняет его сам. Стандартный <code>Python-urllib</code> может получить ошибку 403/1010 ещё до API — это <a href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1010/">проверка клиента на стороне Cloudflare</a>, а не требование авторизации.</p>
     <h2>Запрос за промежуток игрового времени</h2>
     <pre><code>GET https://gtnh-base-history-api-dmkn96.equal-bee-5135.chatgpt.site/api/v1/changes?from=00:00:00&amp;to=01:00:00</code></pre>
