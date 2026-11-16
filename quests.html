@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Квестбук нашей команды GT New Horizons: главы, связи, выполненные задания и награды.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>GTNH · Квестбук</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css?v=11">
+  <link rel="stylesheet" href="assets/quests.css?v=1">
+  <script type="module" src="assets/quests.js?v=1"></script>
+</head>
+<body class="quest-page">
+  <header class="topbar">
+    <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
+    <nav class="site-nav" aria-label="Разделы"><a href="./">База</a><a href="stocks.html">Запасы</a><a href="map.html">Карта</a><a href="quests.html" aria-current="page">Квестбук</a></nav>
+    <div class="header-actions"><span class="sync">Прогресс команды · раз в час</span></div>
+  </header>
+  <main class="quest-main">
+    <aside class="book-sidebar" aria-label="Главы квестбука">
+      <div class="book-heading"><span class="book-emblem" aria-hidden="true">✦</span><div><h1>Квестбук</h1><span>GREGTECH NEW HORIZONS</span></div><button id="chapters-close" aria-label="Скрыть главы">×</button></div>
+      <div class="team-progress"><div><b id="team-total">Загрузка…</b><span id="team-percent"></span></div><progress id="team-bar" value="0" max="1" aria-label="Завершено квестов команды"></progress></div>
+      <div class="book-search"><label class="sr-only" for="quest-search">Поиск по всем квестам</label><input id="quest-search" type="search" placeholder="Поиск квеста…" autocomplete="off"><button id="clear-search" aria-label="Очистить поиск" hidden>×</button></div>
+      <nav id="chapters" class="chapter-list" aria-label="Выбрать главу"></nav>
+      <footer class="book-footer"><p id="saved-date"></p><span>Завершено хотя бы одним участником</span><a href="questbook-credits.txt">Источники и лицензии</a></footer>
+    </aside>
+    <section class="book-content" aria-label="Дерево заданий">
+      <div class="book-toolbar"><button id="chapters-toggle" aria-label="Показать главы">☰</button><div class="chapter-title"><h2 id="chapter-title">Квестбук нашей команды</h2><p id="chapter-count"></p></div><label class="state-filter"><span class="sr-only">Фильтр квестов</span><select id="quest-filter"><option value="all">Все квесты</option><option value="done">Выполненные</option><option value="todo">Оставшиеся</option><option value="available">Доступные</option></select></label></div>
+      <p id="quest-notice" role="status" class="quest-notice">Загрузка глав и прогресса…</p><button id="quest-retry" class="book-button" hidden>Повторить загрузку</button>
+      <div id="quest-map" tabindex="0" aria-label="Карта квестов. Масштаб — колесо мыши или кнопки, перемещение — перетаскиванием или стрелками."><div id="quest-world"><svg id="quest-links" aria-hidden="true"></svg><div id="quest-nodes"></div></div><div id="quest-tooltip" role="tooltip" hidden></div></div>
+      <section id="search-results" aria-label="Результаты поиска" hidden><h3 id="search-count"></h3><div id="search-list"></div></section>
+      <div class="map-footer"><div class="quest-legend"><span><i class="done"></i>Выполнен</span><span><i class="partial"></i>Начат</span><span><i class="available"></i>Доступен</span><span><i class="locked"></i>Закрыт</span></div><div class="zoom-tools"><button id="zoom-out" aria-label="Уменьшить">−</button><button id="zoom-fit" aria-label="Уместить главу">Вписать</button><button id="zoom-in" aria-label="Увеличить">+</button></div></div>
+    </section>
+  </main>
+  <dialog id="quest-dialog" aria-labelledby="detail-title">
+    <header class="detail-heading"><div id="detail-icon"></div><div><p id="detail-chapter"></p><h2 id="detail-title"></h2><p id="detail-status"></p></div><button id="detail-close" aria-label="Закрыть квест">×</button></header>
+    <div class="detail-layout"><section class="detail-description"><h3>Описание</h3><div id="detail-description" class="quest-prose"></div><h3>Связанные задания</h3><div id="detail-relations"></div></section><section class="detail-inventory"><h3 id="tasks-heading">Задания</h3><div id="detail-tasks"></div><h3>Награды</h3><div id="detail-rewards"></div><p class="reward-note">Это просмотр квестбука. Получить награды можно в игре.</p></section></div>
+    <footer class="detail-footer"><span id="detail-id"></span><button id="copy-link" class="book-button">Ссылка на квест</button><span id="copy-notice" role="status"></span></footer>
+  </dialog>
+</body>
+</html>
