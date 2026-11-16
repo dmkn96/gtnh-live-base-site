@@ -10,13 +10,14 @@
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css?v=11">
   <link rel="stylesheet" href="assets/quests.css?v=4">
-  <script type="module" src="assets/quests.js?v=4"></script>
+  <script type="module" src="assets/quests.js?v=5"></script>
+  <link rel="stylesheet" href="assets/update-info.css?v=1">
 </head>
 <body class="quest-page">
   <header class="topbar">
     <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
     <nav class="site-nav" aria-label="Разделы"><a href="./">База</a><a href="stocks.html">Запасы</a><a href="map.html">Карта</a><a href="quests.html" aria-current="page">Квестбук</a></nav>
-    <div class="header-actions"><span class="sync">Прогресс команды · раз в час</span></div>
+    <div class="header-actions"><div id="update-info" class="update-info"><p><strong>Раз в час · в начале часа</strong><span data-update-feed="quests">Обновлено: загрузка…</span></p></div></div>
   </header>
   <main class="quest-main">
     <aside class="book-sidebar" aria-label="Главы квестбука">

@@ -1,0 +1,23 @@
+/* Keep the update information in the header flow, including narrow screens. */
+body:has(.update-info){display:flex;flex-direction:column}
+.topbar:has(.update-info){height:auto;min-height:60px;flex:0 0 auto;flex-wrap:wrap;gap:8px 18px;padding-top:8px;padding-bottom:8px;align-content:normal}
+.topbar:has(.update-info) .header-actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end;max-width:100%;gap:8px 14px}
+body:has(.update-info)>main{height:auto;min-height:0;flex:1}
+body:has(.update-info) #sidebar{top:var(--site-header-height,60px)}
+.update-info{margin-left:auto;text-align:right;font-size:10px;line-height:1.55;white-space:normal;color:var(--muted,#9bb58e);font-variant-numeric:tabular-nums;max-width:330px}
+.update-info p{margin:0}.update-info strong{font-weight:500;color:var(--text,#d8e4cf)}
+.update-info [data-update-feed]{display:block;white-space:nowrap;font-size:9px}
+.update-info [data-state=error],.update-info [data-state=stale]{color:#d2b883}
+.update-info .status-led{display:inline-block;margin-right:5px}
+.update-info .update-live{margin-top:3px;padding-top:3px;border-top:1px solid #80986b33}
+@media(max-width:1100px){.topbar:has(.update-info) .header-actions{gap:6px 12px}.topbar:has(.update-info) .site-nav{margin-left:0}.update-info{font-size:9px}}
+@media(max-width:700px){
+  .topbar:has(.update-info){min-height:88px;padding:8px 12px 0;gap:7px 10px}
+  .topbar:has(.update-info) .site-nav{order:3;flex-basis:100%;height:34px;margin:0;justify-content:center;gap:5px}
+  .topbar:has(.update-info) .header-actions{flex:1;min-width:0;gap:6px 10px}
+  .topbar:has(.update-info) .brand{font-size:12px;gap:6px}
+  .topbar:has(.update-info) .brand img{width:22px;height:22px}
+  .update-info{max-width:100%;font-size:9px;line-height:1.45}
+  .update-info [data-update-feed]{font-size:8px;white-space:normal}
+  .quest-page:has(.update-info) .book-sidebar{top:var(--site-header-height,88px)}
+}

@@ -1,3 +1,4 @@
+import {setUpdateInfo} from './update-info.js?v=1';
 import {statusNames,progressModel,questState,chapterStats,matchesFilter,searchQuests,graphBounds,safeURL} from './quest-model.js';
 import {bindQuestViewport,zoomAt,preserveViewportCenter} from './quest-viewport.js?v=1';
 import {createTermMatcher,appendTerms,termButton} from './quest-terms.js?v=1';
@@ -141,7 +142,7 @@ new ResizeObserver(()=>{
 function navigate(){if(!book)return;const params=new URLSearchParams(location.hash.slice(1)),q=params.get('quest'),c=params.get('chapter');if(q&&book.quests[q]){openChapter(c||chapterOf.get(q)?.id,{updateRoute:false});openQuest(q,null,{updateRoute:false});}else{if(dialog.open)dialog.close();openChapter(c,{updateRoute:false});}}
 window.addEventListener('popstate',navigate);
 async function json(url){const res=await fetch(url,{cache:'no-cache'});if(!res.ok)throw new Error('HTTP '+res.status);return res.json();}
-function freshness(){$('quest-notice').textContent=progress.status==='ready'?'':progress.status==='stale'?'Не удалось обновить прогресс. Показано последнее успешное сохранение.':'Прогресс временно недоступен. Завершённые квесты не определены.';}
+function freshness(){setUpdateInfo('quests',rawProgress.observed_at,rawProgress.status);$('quest-notice').textContent=progress.status==='ready'?'':progress.status==='stale'?'Не удалось обновить прогресс. Показано последнее успешное сохранение.':'Прогресс временно недоступен. Завершённые квесты не определены.';}
 async function load(){
  $('quest-retry').hidden=true;$('quest-notice').textContent='Загрузка глав и прогресса…';
  try{
@@ -152,10 +153,10 @@ async function load(){
   progress=progressModel(rawProgress);renderChapters();
   if(location.hash)navigate();else{const tech=book.chapters.slice(0,7).filter(c=>chapterStats(c,progress).done>0);openChapter((tech.at(-1)||book.chapters[0]).id);}
   freshness();
- }catch{ $('quest-notice').textContent='Не удалось загрузить квестбук. Проверь подключение и повтори попытку.';$('quest-retry').hidden=false;}
+ }catch{ setUpdateInfo('quests',undefined,'error');$('quest-notice').textContent='Не удалось загрузить квестбук. Проверь подключение и повтори попытку.';$('quest-retry').hidden=false;}
 }
 $('quest-retry').addEventListener('click',load);
 let refreshing=false;
-async function refresh(){if(document.hidden||!book||refreshing)return;refreshing=true;try{const [latest,h]=await Promise.all([json('api/v1/quest-progress.json'),json('api/v1/quest-history.json').catch(()=>null)]);if(latest.schema!==1)throw new Error('schema');rawProgress=latest;progress=progressModel(latest);if(h?.schema===1)questHistory=h;else if(questHistory)questHistory={...questHistory,status:'stale'};freshness();updateCounts();updateNodes();search();if(selected)renderDetail(selected);}catch{$('quest-notice').textContent='Связь потеряна. Показана последняя загруженная копия прогресса.';}finally{refreshing=false;}}
+async function refresh(){if(document.hidden||!book||refreshing)return;refreshing=true;try{const [latest,h]=await Promise.all([json('api/v1/quest-progress.json'),json('api/v1/quest-history.json').catch(()=>null)]);if(latest.schema!==1)throw new Error('schema');rawProgress=latest;progress=progressModel(latest);if(h?.schema===1)questHistory=h;else if(questHistory)questHistory={...questHistory,status:'stale'};freshness();updateCounts();updateNodes();search();if(selected)renderDetail(selected);}catch{setUpdateInfo('quests',undefined,'error');$('quest-notice').textContent='Связь потеряна. Показана последняя загруженная копия прогресса.';}finally{refreshing=false;}}
 setInterval(refresh,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 load();

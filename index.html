@@ -9,13 +9,14 @@
   <title>GTNH · База</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css?v=9">
-  <script type="module" src="assets/app.js?v=5"></script>
+  <script type="module" src="assets/app.js?v=6"></script>
+  <link rel="stylesheet" href="assets/update-info.css?v=1">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
     <nav class="site-nav" aria-label="Разделы"><a href="./" aria-current="page">База</a><a href="stocks.html">Запасы</a><a href="map.html">Карта</a><a href="quests.html">Квестбук</a></nav>
-    <div class="header-actions"><label id="dimension-field" class="world-select" for="dimension"><span>Мир</span><select id="dimension" aria-label="Мир 3D-сцены"><option value="0">Верхний мир</option></select></label><div class="sync"><span id="status-led" class="status-led"></span><span id="update">Загрузка…</span></div><button id="panel-toggle" class="filter-toggle" aria-label="Фильтры" aria-controls="sidebar" aria-expanded="false">☷ <span>Фильтры</span></button></div>
+    <div class="header-actions"><label id="dimension-field" class="world-select" for="dimension"><span>Мир</span><select id="dimension" aria-label="Мир 3D-сцены"><option value="0">Верхний мир</option></select></label><button id="panel-toggle" class="filter-toggle" aria-label="Фильтры" aria-controls="sidebar" aria-expanded="false">☷ <span>Фильтры</span></button><div id="update-info" class="update-info"><p><strong><span id="status-led" class="status-led"></span>Раз в час · в начале часа</strong><span data-update-feed="base">Обновлено: загрузка…</span></p></div></div>
   </header>
   <main>
     <aside id="sidebar" inert aria-label="Фильтры">

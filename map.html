@@ -12,13 +12,14 @@
   <link rel="stylesheet" href="assets/vendor/leaflet.css">
   <link rel="stylesheet" href="assets/map.css?v=2">
   <script defer src="assets/vendor/leaflet.js"></script>
-  <script type="module" src="assets/map.js?v=5"></script>
+  <script type="module" src="assets/map.js?v=6"></script>
+  <link rel="stylesheet" href="assets/update-info.css?v=1">
 </head>
 <body class="world-map-page">
   <header class="topbar">
     <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> Карта</span></a>
     <nav class="site-nav" aria-label="Разделы"><a href="./">База</a><a href="stocks.html">Запасы</a><a href="map.html" aria-current="page">Карта</a><a href="quests.html">Квестбук</a></nav>
-    <div class="header-actions"><span id="map-date" class="map-date">Снимок карты</span></div>
+    <div class="header-actions"><div id="update-info" class="update-info"><p><strong>Карта · Раз в час · в начале часа</strong><span data-update-feed="terrain">Обновлено: загрузка…</span></p><p class="update-live"><strong>Игроки · примерно раз в 15 секунд</strong><span data-update-feed="players">Обновлено: подключение…</span></p></div></div>
   </header>
   <main class="world-map-main">
     <div id="world-map" aria-label="Исследованная карта мира" tabindex="0"></div>

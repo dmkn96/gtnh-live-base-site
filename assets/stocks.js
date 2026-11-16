@@ -1,3 +1,4 @@
+import {setUpdateInfo} from './update-info.js?v=1';
 import { materialIcon } from './material-icons.js';
 import { needsPlates } from './stock-alerts.js?v=1';
 
@@ -85,6 +86,7 @@ async function refresh() {
     if (!response.ok) throw new Error('http');
     const data = await response.json();
     if (data.schema !== 1 || !Array.isArray(data.materials) || !['ready', 'stale', 'unavailable'].includes(data.status)) throw new Error('schema');
+    setUpdateInfo('stocks',data.observed_at,data.status);
     materials = data.materials;
     $('stock-list').setAttribute('aria-busy', 'false');
     $('stock-led').className = 'status-led ' + (data.status === 'ready' ? 'ready' : 'stale');
@@ -98,6 +100,7 @@ async function refresh() {
     if (data.status === 'unavailable') $('stock-empty').hidden = true;
   } catch {
     $('stock-list').setAttribute('aria-busy', 'false');
+    setUpdateInfo('stocks',undefined,'error');
     $('stock-led').className = 'status-led stale';
     $('stock-notice').hidden = false;
     $('stock-notice').textContent = materials.length ? 'Не удалось обновить запасы. Показаны предыдущие данные.' : 'Не удалось загрузить запасы. Повторим автоматически.';

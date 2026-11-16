@@ -4,15 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>GTNH · JSON API</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css?v=8">
+  <script type="module" src="assets/update-info.js?v=1"></script>
+  <link rel="stylesheet" href="assets/update-info.css?v=1">
 </head>
 <body class="stocks-page">
   <header class="topbar">
     <a class="brand" href="./"><img src="assets/mark.svg" alt="" width="28" height="28"><span>GTNH <span class="brand-dot">/</span> База</span></a>
-    <nav class="site-nav" aria-label="Разделы"><a href="./">База</a><a href="stocks.html">Запасы</a><a href="map.html">Карта</a><a href="quests.html">Квестбук</a></nav>
+    <nav class="site-nav" aria-label="Разделы"><a href="./">База</a><a href="stocks.html">Запасы</a><a href="map.html">Карта</a><a href="quests.html">Квестбук</a></nav><div class="header-actions"><div id="update-info" class="update-info"><p><strong>Раз в час · в начале часа</strong><span data-update-feed="api">Обновлено: загрузка…</span></p></div></div>
   </header>
   <main class="stock-main"><article class="stock-container api-docs">
     <h1>JSON API</h1>

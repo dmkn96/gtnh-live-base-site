@@ -1,3 +1,4 @@
+import {setUpdateInfo} from './update-info.js?v=1';
 import { point, tileBounds, tilePath, visibleVeins, visibleWaypoints, visiblePlayers, heightLayers, shouldDrawVeins } from './map-model.js?v=4';
 import { oreIcon } from './map-ore-icons.js?v=1';
 
@@ -12,8 +13,7 @@ let veinsRendered = false;
 let terrainTimer, terrainController;
 
 function updateTerrainStamp() {
-  const stamp = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Asia/Seoul', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(data.updatedAt));
-  byId('map-date').textContent = `${data.refresh ? 'Обновлено' : 'Снимок'} ${stamp}`;
+  setUpdateInfo('terrain',data.updatedAt);
   byId('map-coverage').textContent = data.coverage;
 }
 function stopTerrainPoll() {
@@ -39,9 +39,9 @@ async function pollTerrain() {
       } else changeDimension(data.dimensions[0].id);
       updateTerrainStamp();
     }
-    byId('map-date').title = 'Время по Сеулу. Изменения карты проверяются раз в минуту.';
+    setUpdateInfo('terrain',data.updatedAt);
   } catch {
-    if (!document.hidden) byId('map-date').title = 'Проверка обновлений недоступна. Показана последняя загруженная карта.';
+    if (!document.hidden) setUpdateInfo('terrain',undefined,'error');
   } finally {
     clearTimeout(timeout);
     if (terrainController === controller) {
@@ -81,6 +81,7 @@ function veinDetails(vein) {
 
 function updatePlayers() {
   playerMarkers.clearLayers();
+  setUpdateInfo('players',liveState?.observedAt,!showPlayers.checked?'paused':liveError?'error':!liveState?'waiting':liveState.status==='stale'||Date.now()-liveState.observedAt>60000?'stale':!liveState.online?'offline':'ready');
   const status = byId('map-players-status');
   if (!showPlayers.checked) { status.textContent = 'Игроки скрыты'; return; }
   if (liveError) { status.textContent = 'Игроки: нет связи'; return; }
