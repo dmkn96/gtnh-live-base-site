@@ -9,8 +9,8 @@
   <title>GTNH · Квестбук</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css?v=11">
-  <link rel="stylesheet" href="assets/quests.css?v=2">
-  <script type="module" src="assets/quests.js?v=2"></script>
+  <link rel="stylesheet" href="assets/quests.css?v=3">
+  <script type="module" src="assets/quests.js?v=3"></script>
 </head>
 <body class="quest-page">
   <header class="topbar">
@@ -37,7 +37,7 @@
   <dialog id="quest-dialog" aria-labelledby="detail-title">
     <header class="detail-heading"><div id="detail-icon"></div><div><p id="detail-chapter"></p><h2 id="detail-title"></h2><p id="detail-status"></p></div><button id="detail-close" aria-label="Закрыть квест">×</button></header>
     <div class="detail-layout"><section class="detail-description"><h3>Описание</h3><div id="detail-description" class="quest-prose"></div><h3>Связанные задания</h3><div id="detail-relations"></div></section><section class="detail-inventory"><h3 id="tasks-heading">Задания</h3><div id="detail-tasks"></div><h3>Награды</h3><div id="detail-rewards"></div><p class="reward-note">Это просмотр квестбука. Получить награды можно в игре.</p></section></div>
-    <footer class="detail-footer"><span id="detail-id"></span><button id="copy-link" class="book-button">Ссылка на квест</button><span id="copy-notice" role="status"></span></footer>
+    <footer class="detail-footer"><span id="detail-id"></span><span class="term-hint">Выделенное название → скопировать для NEI</span><button id="copy-link" class="book-button">Ссылка на квест</button><span id="copy-notice" role="status"></span></footer>
   </dialog>
 </body>
 </html>

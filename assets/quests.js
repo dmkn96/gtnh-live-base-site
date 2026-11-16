@@ -1,7 +1,11 @@
 import {statusNames,progressModel,questState,chapterStats,matchesFilter,searchQuests,graphBounds,safeURL} from './quest-model.js';
 import {bindQuestViewport,zoomAt,preserveViewportCenter} from './quest-viewport.js?v=1';
+import {createTermMatcher,appendTerms,termButton} from './quest-terms.js?v=1';
 const $=id=>document.getElementById(id),map=$('quest-map'),world=$('quest-world'),dialog=$('quest-dialog');
 let book,rawProgress,progress,chapter,selected=null,scale=1,pan={x:0,y:0},opener=null,viewportSize=null;
+let terms=createTermMatcher(null);
+const termOptions={notice:text=>{$('copy-notice').textContent=text;}};
+function namedText(target,text){target.replaceChildren();appendTerms(target,text,terms,termOptions);}
 const chapterOf=new Map(),nodeElements=new Map(),chapterElements=new Map();
 const create=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
 const icon=(path,cls='')=>{if(!path)return create('span','fallback-icon','✦');const i=create('img',cls);i.src=path;i.alt='';i.draggable=false;return i;};
@@ -71,7 +75,7 @@ function search(){
 function richText(text,target){
  target.replaceChildren();const token=/\[url(?:=([^\]]+))?\]([\s\S]*?)\[\/url\]|§([0-9a-fklmnor])|\[(\/?)(b|i|u|s|warn|note|color)(?:=([^\]]+))?\]|\[img\]([\s\S]*?)\[\/img\]|%n/gi;
  let last=0,parent=target,stack=[],styles=[];
- function append(value){if(!value)return;const span=create('span',styles.join(' '),value);parent.append(span);}
+ function append(value){if(!value)return;const span=create('span',styles.join(' '));appendTerms(span,value,terms,termOptions);parent.append(span);}
  for(const m of text.matchAll(token)){
   append(text.slice(last,m.index));last=m.index+m[0].length;
   if(m[2]!==undefined){const url=safeURL(m[1]||m[2]);if(url){const a=create('a','',m[2]);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}else append(m[2]);}
@@ -90,12 +94,12 @@ function renderGroups(groups,target,reward,id){
   const card=create('div','quest-group'),heading=create('div','quest-group-heading');heading.append(create('span','',typeNames[g.type]||g.type));
   if(!reward&&taskDone.has(g.index))heading.append(create('span','task-done','✓ Выполнено'));
   card.append(heading);
-  for(const item of g.items){const row=create('div','quest-item'),slot=create('span','item-slot');slot.append(icon(item.icon));const name=create('span','item-name',item.name);name.title=item.item+' · '+item.damage;row.append(slot,name,create('span','item-count','× '+item.count.toLocaleString('ru-RU')));card.append(row);}
-  if(g.quest&&book.quests[g.quest]){const link=create('button','relation-button',book.quests[g.quest].name+' ↗');link.addEventListener('click',()=>openQuest(g.quest,link));card.append(link);}else if(g.text)card.append(create('p','',g.text));if(g.consume)card.append(create('p','reward-note','Предметы сдаются при выполнении.'));target.append(card);
+  for(const item of g.items){const row=create('div','quest-item'),slot=create('span','item-slot');slot.append(icon(item.icon));const name=create('span','item-name'),term=terms.terms[terms.items[item.item+'/'+item.damage]];if(term)name.append(termButton(term,null,termOptions));else appendTerms(name,item.name,terms,termOptions);name.title=item.item+' · '+item.damage;row.append(slot,name,create('span','item-count','× '+item.count.toLocaleString('ru-RU')));card.append(row);}
+  if(g.quest&&book.quests[g.quest]){const link=create('button','relation-button',book.quests[g.quest].name+' ↗');link.addEventListener('click',()=>openQuest(g.quest,link));card.append(link);}else if(g.text){const text=create('p');appendTerms(text,g.text,terms,termOptions);card.append(text);}if(g.consume)card.append(create('p','reward-note','Предметы сдаются при выполнении.'));target.append(card);
  }
 }
 function renderDetail(id){
- const q=book.quests[id];$('detail-title').textContent=q.name;$('detail-chapter').textContent=chapterOf.get(id)?.name||'Квест';$('detail-icon').replaceChildren(icon(q.icon));
+ const q=book.quests[id];namedText($('detail-title'),q.name);$('detail-chapter').textContent=chapterOf.get(id)?.name||'Квест';$('detail-icon').replaceChildren(icon(q.icon));
  $('detail-status').textContent=stateName(id)+(q.repeatable?' · Повторяемый':'')+(progress.completed.has(id)?(q.rewards.length?(progress.claimed.has(id)?' · Награды получены хотя бы одним участником':' · Награды ещё не получены'):''):'' )+(progress.status==='stale'?' · Сохранённая копия':'');
  richText(q.description||'В этом квесте нет описания.',$('detail-description'));
  $('tasks-heading').textContent=q.task_logic==='OR'?'Задания · достаточно одного':'Задания';
@@ -135,7 +139,8 @@ function freshness(){$('quest-notice').textContent=progress.status==='ready'?'':
 async function load(){
  $('quest-retry').hidden=true;$('quest-notice').textContent='Загрузка глав и прогресса…';
  try{
-  [book,rawProgress]=await Promise.all([json('api/v1/quests.json'),json('api/v1/quest-progress.json')]);
+  const loaded=await Promise.all([json('api/v1/quests.json'),json('api/v1/quest-progress.json'),json('assets/quest-terms.json?v=1')]);
+  [book,rawProgress]=loaded;terms=createTermMatcher(loaded[2]);
   if(book.schema!==1||!book.chapters?.length||rawProgress.schema!==1)throw new Error('Неверный формат квестбука');
   progress=progressModel(rawProgress);renderChapters();
   if(location.hash)navigate();else{const tech=book.chapters.slice(0,7).filter(c=>chapterStats(c,progress).done>0);openChapter((tech.at(-1)||book.chapters[0]).id);}

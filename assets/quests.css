@@ -5,3 +5,9 @@
 
 /* Navigation owns pointer gestures only inside the quest canvas. */
 #quest-map,#quest-map *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#quest-map{overscroll-behavior:contain}#quest-map img{-webkit-user-drag:none}#quest-map.dragging,#quest-map.dragging *{cursor:grabbing!important}
+
+/* Copyable names retain paragraph flow and remain distinct from Minecraft colors. */
+#quest-dialog .quest-term{display:inline;padding:0 1px;margin:0;border:0;border-radius:2px;background:#18717a0b;color:#145e68;font:inherit;font-weight:700;text-align:inherit;line-height:inherit;white-space:normal;overflow-wrap:anywhere;vertical-align:baseline;cursor:copy;user-select:text;-webkit-user-select:text}
+#quest-dialog .quest-term:hover{color:#0b4651;background:#18717a16;text-decoration:underline;text-underline-offset:3px}
+#quest-dialog .quest-term:focus-visible{outline:2px solid #947021;outline-offset:2px}
+.term-hint{font-size:10px;color:#145e68}#copy-notice{flex-basis:100%;overflow-wrap:anywhere}#copy-notice:empty{display:none}
