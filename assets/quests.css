@@ -11,3 +11,4 @@
 #quest-dialog .quest-term:hover{color:#0b4651;background:#18717a16;text-decoration:underline;text-underline-offset:3px}
 #quest-dialog .quest-term:focus-visible{outline:2px solid #947021;outline-offset:2px}
 .term-hint{font-size:10px;color:#145e68}#copy-notice{flex-basis:100%;overflow-wrap:anywhere}#copy-notice:empty{display:none}
+.quest-history-card{border-left:3px solid #648052;background:#e1e6cc66;padding:12px 14px;margin-bottom:24px;font-size:12px;line-height:1.6}.quest-history-card p{margin:5px 0}.quest-history-card p:empty{display:none}.quest-history-card a{color:#145e68}.quest-history-card[hidden]{display:none}

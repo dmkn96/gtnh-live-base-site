@@ -9,8 +9,8 @@
   <title>GTNH · Квестбук</title>
   <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css?v=11">
-  <link rel="stylesheet" href="assets/quests.css?v=3">
-  <script type="module" src="assets/quests.js?v=3"></script>
+  <link rel="stylesheet" href="assets/quests.css?v=4">
+  <script type="module" src="assets/quests.js?v=4"></script>
 </head>
 <body class="quest-page">
   <header class="topbar">
@@ -24,7 +24,7 @@
       <div class="team-progress"><div><b id="team-total">Загрузка…</b><span id="team-percent"></span></div><progress id="team-bar" value="0" max="1" aria-label="Завершено квестов команды"></progress></div>
       <div class="book-search"><label class="sr-only" for="quest-search">Поиск по всем квестам</label><input id="quest-search" type="search" placeholder="Поиск квеста…" autocomplete="off"><button id="clear-search" aria-label="Очистить поиск" hidden>×</button></div>
       <nav id="chapters" class="chapter-list" aria-label="Выбрать главу"></nav>
-      <footer class="book-footer"><p id="saved-date"></p><span>Завершено хотя бы одним участником</span><a href="questbook-credits.txt">Источники и лицензии</a></footer>
+      <footer class="book-footer"><p id="saved-date"></p><span>Завершено хотя бы одним участником</span><a href="quest-history.html">История всех выполнений</a> · <a href="questbook-credits.txt">Источники и лицензии</a></footer>
     </aside>
     <section class="book-content" aria-label="Дерево заданий">
       <div class="book-toolbar"><button id="chapters-toggle" aria-label="Показать главы">☰</button><div class="chapter-title"><h2 id="chapter-title">Квестбук нашей команды</h2><p id="chapter-count"></p></div><label class="state-filter"><span class="sr-only">Фильтр квестов</span><select id="quest-filter"><option value="all">Все квесты</option><option value="done">Выполненные</option><option value="todo">Оставшиеся</option><option value="available">Доступные</option></select></label></div>
@@ -36,7 +36,7 @@
   </main>
   <dialog id="quest-dialog" aria-labelledby="detail-title">
     <header class="detail-heading"><div id="detail-icon"></div><div><p id="detail-chapter"></p><h2 id="detail-title"></h2><p id="detail-status"></p></div><button id="detail-close" aria-label="Закрыть квест">×</button></header>
-    <div class="detail-layout"><section class="detail-description"><h3>Описание</h3><div id="detail-description" class="quest-prose"></div><h3>Связанные задания</h3><div id="detail-relations"></div></section><section class="detail-inventory"><h3 id="tasks-heading">Задания</h3><div id="detail-tasks"></div><h3>Награды</h3><div id="detail-rewards"></div><p class="reward-note">Это просмотр квестбука. Получить награды можно в игре.</p></section></div>
+    <div class="detail-layout"><section class="detail-description"><aside id="detail-history" class="quest-history-card" hidden><strong id="detail-time"></strong><p id="detail-actor"></p><p id="detail-credit"></p><p id="detail-time-note"></p><a href="quest-history.html">Полный журнал выполнений ↗</a></aside><h3>Описание</h3><div id="detail-description" class="quest-prose"></div><h3>Связанные задания</h3><div id="detail-relations"></div></section><section class="detail-inventory"><h3 id="tasks-heading">Задания</h3><div id="detail-tasks"></div><h3>Награды</h3><div id="detail-rewards"></div><p class="reward-note">Это просмотр квестбука. Получить награды можно в игре.</p></section></div>
     <footer class="detail-footer"><span id="detail-id"></span><span class="term-hint">Выделенное название → скопировать для NEI</span><button id="copy-link" class="book-button">Ссылка на квест</button><span id="copy-notice" role="status"></span></footer>
   </dialog>
 </body>

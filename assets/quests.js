@@ -1,9 +1,11 @@
 import {statusNames,progressModel,questState,chapterStats,matchesFilter,searchQuests,graphBounds,safeURL} from './quest-model.js';
 import {bindQuestViewport,zoomAt,preserveViewportCenter} from './quest-viewport.js?v=1';
 import {createTermMatcher,appendTerms,termButton} from './quest-terms.js?v=1';
+import {firstCompletion,formatQuestTime,actorLabel,timeNote} from './quest-history.js?v=1';
 const $=id=>document.getElementById(id),map=$('quest-map'),world=$('quest-world'),dialog=$('quest-dialog');
 let book,rawProgress,progress,chapter,selected=null,scale=1,pan={x:0,y:0},opener=null,viewportSize=null;
 let terms=createTermMatcher(null);
+let questHistory=null;
 const termOptions={notice:text=>{$('copy-notice').textContent=text;}};
 function namedText(target,text){target.replaceChildren();appendTerms(target,text,terms,termOptions);}
 const chapterOf=new Map(),nodeElements=new Map(),chapterElements=new Map();
@@ -100,6 +102,10 @@ function renderGroups(groups,target,reward,id){
 }
 function renderDetail(id){
  const q=book.quests[id];namedText($('detail-title'),q.name);$('detail-chapter').textContent=chapterOf.get(id)?.name||'Квест';$('detail-icon').replaceChildren(icon(q.icon));
+ const completed=firstCompletion(questHistory,id);$('detail-history').hidden=!completed&&!progress.completed.has(id);
+ $('detail-time').textContent=formatQuestTime(completed);$('detail-actor').textContent=actorLabel(completed);
+ $('detail-time-note').textContent=(questHistory?.status==='stale'?'История показана из сохранённой копии. ':'')+timeNote(completed);
+ $('detail-credit').textContent=completed?.first_credited.length?'Первый зарегистрированный зачёт: '+completed.first_credited.join(', ')+' · не обязательно автор действия':'';
  $('detail-status').textContent=stateName(id)+(q.repeatable?' · Повторяемый':'')+(progress.completed.has(id)?(q.rewards.length?(progress.claimed.has(id)?' · Награды получены хотя бы одним участником':' · Награды ещё не получены'):''):'' )+(progress.status==='stale'?' · Сохранённая копия':'');
  richText(q.description||'В этом квесте нет описания.',$('detail-description'));
  $('tasks-heading').textContent=q.task_logic==='OR'?'Задания · достаточно одного':'Задания';
@@ -139,8 +145,9 @@ function freshness(){$('quest-notice').textContent=progress.status==='ready'?'':
 async function load(){
  $('quest-retry').hidden=true;$('quest-notice').textContent='Загрузка глав и прогресса…';
  try{
-  const loaded=await Promise.all([json('api/v1/quests.json'),json('api/v1/quest-progress.json'),json('assets/quest-terms.json?v=1')]);
+  const loaded=await Promise.all([json('api/v1/quests.json'),json('api/v1/quest-progress.json'),json('assets/quest-terms.json?v=1'),json('api/v1/quest-history.json').catch(()=>null)]);
   [book,rawProgress]=loaded;terms=createTermMatcher(loaded[2]);
+  questHistory=loaded[3]?.schema===1?loaded[3]:null;
   if(book.schema!==1||!book.chapters?.length||rawProgress.schema!==1)throw new Error('Неверный формат квестбука');
   progress=progressModel(rawProgress);renderChapters();
   if(location.hash)navigate();else{const tech=book.chapters.slice(0,7).filter(c=>chapterStats(c,progress).done>0);openChapter((tech.at(-1)||book.chapters[0]).id);}
@@ -149,6 +156,6 @@ async function load(){
 }
 $('quest-retry').addEventListener('click',load);
 let refreshing=false;
-async function refresh(){if(document.hidden||!book||refreshing)return;refreshing=true;try{const latest=await json('api/v1/quest-progress.json');if(latest.schema!==1)throw new Error('schema');rawProgress=latest;progress=progressModel(latest);freshness();updateCounts();updateNodes();search();if(selected)renderDetail(selected);}catch{$('quest-notice').textContent='Связь потеряна. Показана последняя загруженная копия прогресса.';}finally{refreshing=false;}}
+async function refresh(){if(document.hidden||!book||refreshing)return;refreshing=true;try{const [latest,h]=await Promise.all([json('api/v1/quest-progress.json'),json('api/v1/quest-history.json').catch(()=>null)]);if(latest.schema!==1)throw new Error('schema');rawProgress=latest;progress=progressModel(latest);if(h?.schema===1)questHistory=h;else if(questHistory)questHistory={...questHistory,status:'stale'};freshness();updateCounts();updateNodes();search();if(selected)renderDetail(selected);}catch{$('quest-notice').textContent='Связь потеряна. Показана последняя загруженная копия прогресса.';}finally{refreshing=false;}}
 setInterval(refresh,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 load();
