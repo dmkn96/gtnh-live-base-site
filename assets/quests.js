@@ -1,6 +1,7 @@
 import {statusNames,progressModel,questState,chapterStats,matchesFilter,searchQuests,graphBounds,safeURL} from './quest-model.js';
+import {bindQuestViewport,zoomAt,preserveViewportCenter} from './quest-viewport.js?v=1';
 const $=id=>document.getElementById(id),map=$('quest-map'),world=$('quest-world'),dialog=$('quest-dialog');
-let book,rawProgress,progress,chapter,selected=null,scale=1,pan={x:0,y:0},drag=null,dragged=false,opener=null;
+let book,rawProgress,progress,chapter,selected=null,scale=1,pan={x:0,y:0},opener=null,viewportSize=null;
 const chapterOf=new Map(),nodeElements=new Map(),chapterElements=new Map();
 const create=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
 const icon=(path,cls='')=>{if(!path)return create('span','fallback-icon','✦');const i=create('img',cls);i.src=path;i.alt='';i.draggable=false;return i;};
@@ -8,11 +9,12 @@ const stateOf=id=>questState(id,book,progress),stateName=id=>statusNames[stateOf
 const seoul=value=>value?new Intl.DateTimeFormat('ru-RU',{timeZone:'Asia/Seoul',dateStyle:'short',timeStyle:'short'}).format(new Date(value))+' · Сеул':'';
 function route(quest=null,push=false){const h=new URLSearchParams({chapter:chapter.id});if(quest)h.set('quest',quest);history[push?'pushState':'replaceState'](null,'','#'+h);}
 function drawTransform(){world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${scale})`;}
-function fit(){if(!chapter||!map.clientWidth||!map.clientHeight)return;const b=graphBounds(chapter);scale=Math.max(.12,Math.min(1.8,Math.min(map.clientWidth/(b.w*1.5),map.clientHeight/(b.h*1.5))*.94));pan={x:(map.clientWidth-b.w*1.5*scale)/2-b.x*1.5*scale,y:(map.clientHeight-b.h*1.5*scale)/2-b.y*1.5*scale};drawTransform();}
-function zoom(factor,x=map.clientWidth/2,y=map.clientHeight/2){const next=Math.max(.12,Math.min(5,scale*factor)),r=next/scale;pan={x:x-(x-pan.x)*r,y:y-(y-pan.y)*r};scale=next;drawTransform();hideTip();}
+function fit(){if(!chapter||!map.clientWidth||!map.clientHeight)return;viewportSize={w:map.clientWidth,h:map.clientHeight};const b=graphBounds(chapter);scale=Math.max(.12,Math.min(1.8,Math.min(map.clientWidth/(b.w*1.5),map.clientHeight/(b.h*1.5))*.94));pan={x:(map.clientWidth-b.w*1.5*scale)/2-b.x*1.5*scale,y:(map.clientHeight-b.h*1.5*scale)/2-b.y*1.5*scale};drawTransform();}
+function zoom(factor,x=map.clientWidth/2,y=map.clientHeight/2){const next=zoomAt({scale,...pan},factor,{x,y});scale=next.scale;pan={x:next.x,y:next.y};drawTransform();hideTip();}
 function showTip(id,e){const tip=$('quest-tooltip');tip.replaceChildren(create('strong','',book.quests[id].name),create('small','',stateName(id)+' · Нажми, чтобы открыть'));tip.hidden=false;const rect=e.currentTarget.getBoundingClientRect();tip.style.left=Math.min(window.innerWidth-295,Math.max(12,rect.right+10))+'px';tip.style.top=Math.min(window.innerHeight-90,rect.top)+'px';}
 function hideTip(){$('quest-tooltip').hidden=true;}
 function openChapter(id,{updateRoute=true,reset=true}={}){
+ viewportControls.cancel();
  chapter=book.chapters.find(c=>c.id===id)||book.chapters[0];
  for(const [key,button] of chapterElements)button.setAttribute('aria-current',String(key===chapter.id));
  $('chapter-title').textContent=chapter.name;updateCounts();
@@ -32,8 +34,8 @@ function openChapter(id,{updateRoute=true,reset=true}={}){
   const button=create('button','quest-node'+(q.main?' main':''));button.type='button';button.dataset.quest=n.id;
   Object.assign(button.style,{left:n.x*1.5+'px',top:n.y*1.5+'px',width:n.w*1.5+'px',height:n.h*1.5+'px'});
   button.append(icon(q.icon));
-  button.addEventListener('click',()=>{if(!dragged)openQuest(n.id,button);});
-  button.addEventListener('pointerenter',e=>{if(!drag)showTip(n.id,e);});button.addEventListener('pointerleave',hideTip);
+  button.addEventListener('click',()=>openQuest(n.id,button));
+  button.addEventListener('pointerenter',e=>{if(!viewportControls.active)showTip(n.id,e);});button.addEventListener('pointerleave',hideTip);
   button.addEventListener('focus',e=>showTip(n.id,e));button.addEventListener('blur',hideTip);
   nodes.append(button);nodeElements.set(n.id,button);
  }
@@ -61,7 +63,7 @@ function renderChapters(){
 function search(){
  const query=$('quest-search').value.trim();$('clear-search').hidden=!query;
  if(!query){$('search-results').hidden=true;map.hidden=false;return;}
- hideTip();map.hidden=true;$('search-results').hidden=false;
+ viewportControls.cancel();hideTip();map.hidden=true;$('search-results').hidden=false;
  const results=searchQuests(book,progress,query,$('quest-filter').value);$('search-count').textContent=`Найдено: ${results.length}`;$('search-list').replaceChildren();
  for(const id of results){const q=book.quests[id],b=create('button','search-quest '+stateOf(id));b.append(icon(q.icon));const text=create('span');text.append(create('b','',q.name),create('small','',(chapterOf.get(id)?.name||'Другая глава')+' · '+stateName(id)));b.append(text);b.addEventListener('click',()=>openQuest(id,b));$('search-list').append(b);}
 }
@@ -106,7 +108,7 @@ function renderDetail(id){
  $('detail-id').textContent='ID: '+id;$('copy-notice').textContent='';
 }
 function openQuest(id,button=null,{updateRoute=true}={}){
- if(!book.quests[id])return;selected=id;if(button)opener=button;
+ if(!book.quests[id])return;viewportControls.cancel();selected=id;if(button)opener=button;
  if(chapterOf.get(id)&&!chapter.nodes.some(n=>n.id===id))openChapter(chapterOf.get(id).id,{updateRoute:false});
  hideTip();renderDetail(id);if(!dialog.open)dialog.showModal();if(updateRoute)route(id,true);$('detail-close').focus();
 }
@@ -114,17 +116,18 @@ function closeQuest(){dialog.close();}
 dialog.addEventListener('close',()=>{selected=null;if(chapter)route();if(opener?.isConnected)opener.focus();hideTip();});
 $('detail-close').addEventListener('click',closeQuest);dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeQuest();}});
 $('copy-link').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);$('copy-notice').textContent='Ссылка скопирована';}catch{$('copy-notice').textContent='Скопируй адрес из строки браузера';}});
-map.addEventListener('wheel',e=>{e.preventDefault();const r=map.getBoundingClientRect();zoom(Math.exp(-e.deltaY*.0015),e.clientX-r.left,e.clientY-r.top);},{passive:false});
-map.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY};dragged=false;});
-map.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)>5){dragged=true;map.setPointerCapture(e.pointerId);map.classList.add('dragging');}if(dragged){pan.x+=dx;pan.y+=dy;drawTransform();hideTip();}drag.x=e.clientX;drag.y=e.clientY;});
-function endDrag(){drag=null;map.classList.remove('dragging');setTimeout(()=>{dragged=false;},0);}
-map.addEventListener('pointerup',endDrag);map.addEventListener('pointercancel',endDrag);
+const viewportControls=bindQuestViewport(map,{panBy(dx,dy){pan.x+=dx;pan.y+=dy;drawTransform();hideTip();},zoomBy:zoom,onStart:hideTip});
 map.addEventListener('keydown',e=>{if(e.target!==map)return;const dirs={ArrowLeft:[50,0],ArrowRight:[-50,0],ArrowUp:[0,50],ArrowDown:[0,-50]};if(dirs[e.key]){e.preventDefault();pan.x+=dirs[e.key][0];pan.y+=dirs[e.key][1];drawTransform();}else if(e.key==='+'||e.key==='=')zoom(1.2);else if(e.key==='-')zoom(1/1.2);else if(e.key.toLowerCase()==='r')fit();});
 $('zoom-in').addEventListener('click',()=>zoom(1.3));$('zoom-out').addEventListener('click',()=>zoom(1/1.3));$('zoom-fit').addEventListener('click',fit);
 $('chapters-toggle').addEventListener('click',()=>document.body.classList.toggle('chapters-open'));$('chapters-close').addEventListener('click',()=>document.body.classList.remove('chapters-open'));
 $('quest-search').addEventListener('input',search);$('clear-search').addEventListener('click',()=>{$('quest-search').value='';search();$('quest-search').focus();});
 $('quest-filter').addEventListener('change',()=>{updateNodes();search();});
-new ResizeObserver(()=>{if(chapter&&!dialog.open)fit();}).observe(map);
+new ResizeObserver(()=>{
+ if(!chapter||!map.clientWidth||!map.clientHeight)return;
+ const next={w:map.clientWidth,h:map.clientHeight};
+ if(viewportSize){pan=preserveViewportCenter(pan,viewportSize,next);drawTransform();}
+ viewportSize=next;
+}).observe(map);
 function navigate(){if(!book)return;const params=new URLSearchParams(location.hash.slice(1)),q=params.get('quest'),c=params.get('chapter');if(q&&book.quests[q]){openChapter(c||chapterOf.get(q)?.id,{updateRoute:false});openQuest(q,null,{updateRoute:false});}else{if(dialog.open)dialog.close();openChapter(c,{updateRoute:false});}}
 window.addEventListener('popstate',navigate);
 async function json(url){const res=await fetch(url,{cache:'no-cache'});if(!res.ok)throw new Error('HTTP '+res.status);return res.json();}
